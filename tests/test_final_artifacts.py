@@ -7,6 +7,7 @@ import pandas as pd
 REQUIRED_OUTPUTS = [
     "outputs/tables/final_clustering_selection.csv",
     "outputs/tables/final_metrics_summary.csv",
+    "outputs/tables/final_internal_cluster_metrics.csv",
     "outputs/tables/cluster_ctfidf_terms.csv",
     "outputs/tables/cluster_interpretation_cards.csv",
     "outputs/tables/cluster_report_ready_summary.csv",
@@ -21,7 +22,7 @@ REQUIRED_OUTPUTS = [
     "outputs/figures/umap3d_final.png",
     "outputs/report_notes/10_final_clustering_selection.md",
     "outputs/report_notes/11_cluster_interpretation.md",
-    "notebooks/tagged_corpus_analysis_executed_colab.ipynb",
+    "notebooks/tagged_corpus_analysis_execution_summary.ipynb",
 ]
 
 
@@ -71,16 +72,16 @@ def test_feature_files_are_text_derived_and_row_aligned():
 
 
 def test_executed_notebook_contains_required_outputs():
-    text = Path("notebooks/tagged_corpus_analysis_executed_colab.ipynb").read_text(encoding="utf-8")
+    text = Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb").read_text(encoding="utf-8")
     required_fragments = [
         "Python:",
         "Torch:",
         "CUDA available:",
         "GPU:",
         "Git commit:",
-        "final_cluster_count",
+        "Final cluster count:",
         "hybrid_dense_lexical_dw0.75_lw0.25",
-        "generated_artifacts",
+        "generated_report_artifacts",
     ]
     missing = [fragment for fragment in required_fragments if fragment not in text]
     assert missing == []

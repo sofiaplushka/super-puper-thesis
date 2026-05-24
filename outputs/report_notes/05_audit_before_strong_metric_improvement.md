@@ -78,7 +78,7 @@ Notebook `notebooks/tagged_corpus_analysis.ipynb`: executed code cells=0, output
 - `outputs/tables/metrics_all.csv`
 - `outputs/tables/feature_ablation_metrics.csv`
 - `outputs/tables/clustering_search_all_runs.csv`
-- `notebooks/tagged_corpus_analysis_executed_colab.ipynb`
+- `notebooks/tagged_corpus_analysis_execution_summary.ipynb`
 
 ## Planned commands
 ```bash

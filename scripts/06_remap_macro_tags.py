@@ -73,7 +73,7 @@ def write_audit(before: pd.DataFrame) -> None:
         "outputs/tables/metrics_all.csv",
         "outputs/tables/feature_ablation_metrics.csv",
         "outputs/tables/clustering_search_all_runs.csv",
-        "notebooks/tagged_corpus_analysis_executed_colab.ipynb",
+        "notebooks/tagged_corpus_analysis_execution_summary.ipynb",
     ]
     missing = [p for p in required if not Path(p).exists()]
     lines = [

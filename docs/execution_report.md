@@ -29,6 +29,9 @@ python scripts/06_remap_macro_tags.py
 python scripts/07_compute_exact_metrics.py
 python scripts/08_feature_ablation_and_search.py
 python scripts/09_select_final_and_interpret.py
+python scripts/11_compute_final_internal_metrics.py
+python scripts/12_macro_tag_mapping_audit.py
+python scripts/10_build_execution_summary_notebook.py
 ```
 
 Embedding computation was executed in Google Colab on a Tesla T4 through the
@@ -173,11 +176,14 @@ Generated:
 - `outputs/tables/cluster_interpretation_cards.csv`
 - `outputs/tables/cluster_report_ready_summary.csv`
 - `outputs/tables/cluster_final_interpretation_cards.csv`
+- `outputs/tables/final_internal_cluster_metrics.csv`
+- `outputs/tables/macro_tag_mapping_audit.csv`
 - `outputs/figures/umap2d_final.html`
 - `outputs/figures/umap3d_final.html`
 - `outputs/figures/umap2d_final.png`
 - `outputs/figures/umap3d_final.png`
-- `notebooks/tagged_corpus_analysis_executed_colab.ipynb`
+- `notebooks/tagged_corpus_analysis_execution_summary.ipynb`
+- `outputs/report_notes/12_macro_tag_mapping_audit.md`
 
 Final selected configuration:
 
@@ -200,6 +206,14 @@ ARI did not improve by `+0.15`, V-measure did not reach `0.40` under the
 8-25-cluster constraint, and pairwise F1 remained below `0.35` on the full
 multi-label set. The single-clear-label subset reached pairwise F1 **0.3541**
 and V-measure **0.4198**. These results are reported as-is rather than inflated.
+
+Final internal metrics are stored in
+`outputs/tables/final_internal_cluster_metrics.csv` and mirrored to
+`outputs/tables/internal_cluster_metrics.csv`; the initial 12-cluster internal
+metrics were archived as `outputs/tables/internal_cluster_metrics_initial_leiden.csv`.
+The execution notebook is a local nbclient reproducibility summary based on
+saved repository artifacts. It is not described as a real Colab execution
+notebook.
 
 ## Rerun locally
 
@@ -229,8 +243,9 @@ Then download or commit the generated `data/embeddings/*` and
 
 ## Unresolved issues
 
-No blocking issue is known at this point. The main methodological limitations
-are that the corpus is tagged-only, tags are silver labels rather than expert
-gold labels, and the strongest honest final configuration improves the metrics
-substantially but does not meet every stretch target from the metric-improvement
-specification.
+No blocking code issue is known at this point. The main methodological
+limitations are that the corpus is tagged-only, tags are silver labels rather
+than expert gold labels, the `other=0` result comes from an exhaustive tag-level
+taxonomy rather than expert row labeling, and the strongest honest final
+configuration improves the metrics substantially but does not meet every stretch
+target from the metric-improvement specification.

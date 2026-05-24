@@ -80,9 +80,26 @@ def main() -> int:
                 "outputs/tables/final_clustering_selection.csv",
                 "outputs/tables/final_metrics_summary.csv",
                 "outputs/report_notes/11_cluster_interpretation.md",
-                "notebooks/tagged_corpus_analysis_executed_colab.ipynb",
             ]
         ),
+    )
+    run(
+        [py, "scripts/11_compute_final_internal_metrics.py"],
+    )
+    run(
+        [py, "scripts/12_macro_tag_mapping_audit.py"],
+        skip=args.skip_existing
+        and exists_all(
+            [
+                "outputs/tables/macro_tag_mapping_audit.csv",
+                "outputs/report_notes/12_macro_tag_mapping_audit.md",
+            ]
+        ),
+    )
+    run(
+        [py, "scripts/10_build_execution_summary_notebook.py"],
+        skip=args.skip_existing
+        and Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb").exists(),
     )
     return 0
 

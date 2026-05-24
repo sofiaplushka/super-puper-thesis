@@ -1,0 +1,159 @@
+raw_tag,raw_tag_count,mapped_macro_tag,audit_status,audit_rationale,example_joke_ids
+девушки,335,sex_gender,confident,The raw tag has a direct semantic match to the assigned macro-category.,51414;481470;486442;491295;491414
+муж и жена,263,family_relationships,confident,The raw tag has a direct semantic match to the assigned macro-category.,443933;452858;461783;461778;477039
+о жизни,232,absurd_philosophy,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",527593;575530;587064;592708;602353
+вовочка,219,education_children,confident,The raw tag has a direct semantic match to the assigned macro-category.,-422500004;-421900010;-432500001;-432500002;-432500005
+студент,214,education_children,confident,The raw tag has a direct semantic match to the assigned macro-category.,-412200003;-412200009;-422300014;-442900003;-442600004
+работа,202,work_professions,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-422000003;15304;-12900015;-52800005;-52200002
+мужчины,187,sex_gender,confident,The raw tag has a direct semantic match to the assigned macro-category.,461324;461340;481723;496827;507983
+Путин,168,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-10095225;-10080430;-10059126;-10026309;-10011069
+политика,155,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-71500005;-1062900002;-2032900010;-2032700003;-10059128
+врачи,151,health_medicine,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10047454;-9969162;24529;28561;28254
+гаи,144,law_crime,confident,The raw tag has a direct semantic match to the assigned macro-category.,-442000005;-441900005;-462000008;-482300003;-482300004
+интернет,135,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,-1072100002;-10026312;55968;77815;106746
+дети,131,education_children,confident,The raw tag has a direct semantic match to the assigned macro-category.,-503000006;-9969157;363528;367695;415216
+Украина,120,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-451800001;10772;-62400005;-71600001;-1032300004
+авто,119,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,338265;347015;354475;359406;367685
+новогодний,105,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,-492500017;-10011063;-9995059;19335;19340
+коронавирус,102,covid_pandemic,confident,The raw tag has a direct semantic match to the assigned macro-category.,1087388;1087066;1097756;1097767;1097772
+деньги,98,finance_economy,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",42733;461629;477057;476679;486603
+Одесса,95,cities_places,confident,The raw tag has a direct semantic match to the assigned macro-category.,-33100005;-52700004;-61500003;-82800004;-92800003
+звёзды,85,media_popculture,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,-1092600011;-1123100005;-10095264;-10080386;-9994286
+Рабинович,77,literature_folklore_characters,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,-482400001;14517;-61500004;-112000002;-1072700004
+школа,76,education_children,confident,The raw tag has a direct semantic match to the assigned macro-category.,14184;-9990009;38365;47288;64410
+секс,73,sex_gender,confident,The raw tag has a direct semantic match to the assigned macro-category.,96914;476670;476492;481729;503033
+спорт,73,sport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-62800005;-92500005;-102700004;-1022500010;-1072700004
+кошки,71,animals,confident,The raw tag has a direct semantic match to the assigned macro-category.,46591;97126;158326;354982;403871
+водка,70,alcohol_smoking_drugs,confident,The raw tag has a direct semantic match to the assigned macro-category.,471123;481471;486943;491296;491698
+авиация,68,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-412400007;-461500003;-512700007;-523100008;15631
+тв,66,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,247726;273138;292348;305943;314386
+коррупция,55,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",337583;371871;375970;381592;381451
+погода,53,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-10004612;138728;224708;292574;304909
+объявления,51,consumer_services,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",191167;190079;224544;237698;248302
+русский язык,50,textual_forms,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",15104;-10037720;78664;195793;273148
+армия,48,army_police,confident,The raw tag has a direct semantic match to the assigned macro-category.,14514;-1102900001;-2062300009;-10018525;-9994293
+Медведев,48,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",381455;403332;407808;443927;457064
+сигареты,48,alcohol_smoking_drugs,confident,The raw tag has a direct semantic match to the assigned macro-category.,24696;38516;102484;106871;230561
+блондинки,47,sex_gender,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,112265;185566;195377;236962;268577
+реклама,46,consumer_services,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",207526;231838;268069;273312;301361
+мобильный,45,it_internet,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",121102;163985;182037;190437;207526
+отдых,45,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-10095208;-10018524;59989;93249;92085
+футбол,45,sport,confident,The raw tag has a direct semantic match to the assigned macro-category.,438669;438505;437900;544185;550943
+пенсионеры,44,health_medicine,confident,The raw tag has a direct semantic match to the assigned macro-category.,507980;527428;532767;631603;677349
+Дед Мороз,43,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,-9999662;-9999681;-9999691;-10004616;-9995059
+новые русские,43,ethnic_regional,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",15134;13152;12799;14561;15754
+windows,40,it_internet,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",-61400005;-92200002;-102600005;-1102800010;-1102300007
+диета,40,food_diet,confident,The raw tag has a direct semantic match to the assigned macro-category.,-52600001;-10095263;-10095262;-10069739;-10053123
+программист,39,work_professions,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",15133;-1073100007;-10080397;-10059094;19488
+фильмы,39,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,51015;78495;78071;83761;207508
+Москва,37,cities_places,confident,The raw tag has a direct semantic match to the assigned macro-category.,471503;471277;471284;471289;471292
+Ржевский,37,literature_folklore_characters,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,-412300007;-432500003;-451000007;-471700002;-471400003
+чапаев,35,literature_folklore_characters,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,-422500001;-452600001;-451100001;-451100003;-451100004
+космос,33,science_space,confident,The raw tag has a direct semantic match to the assigned macro-category.,63863;97114;126776;125987;139537
+наркотики,33,alcohol_smoking_drugs,confident,The raw tag has a direct semantic match to the assigned macro-category.,-413100002;-503100004;15578;10893;-1112600003
+аптека,32,health_medicine,confident,The raw tag has a direct semantic match to the assigned macro-category.,10473;-1012800001;-1092200004;-1103100005;-1103100012
+соседи,31,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",477027;476870;481458;481470;486444
+геи,30,sex_gender,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10011025;19710;231438;230278;248168
+милиция,30,army_police,confident,The raw tag has a direct semantic match to the assigned macro-category.,-2042700006;-2072900007;121104;196205;213603
+кино,29,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,14593;-9938613;64576;101679;112259
+поезд,29,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-492700011;12065;13043;11207;-61400003
+налоги,28,finance_economy,confident,The raw tag has a direct semantic match to the assigned macro-category.,248299;273565;329708;333628;399001
+Шерлок Холмс,28,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-482600006;-492900003;-492800005;-42500028;-42500029
+свадьба,27,family_relationships,confident,The raw tag has a direct semantic match to the assigned macro-category.,19479;97121;287733;300923;318833
+смс,27,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,73945;73447;134048;164160;219143
+собаки,27,animals,confident,The raw tag has a direct semantic match to the assigned macro-category.,394323;394171;399252;471312;477064
+такси,27,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-442000003;-462000014;-492900007;-502500003;15490
+тёща,27,family_relationships,confident,The raw tag has a direct semantic match to the assigned macro-category.,18370;27818;59545;83894;132720
+парашют,26,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-442400002;-462000005;-472300006;-42500040;-1022200010
+приметы,26,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",12750;-101800004;-1122900005;-10090611;-10053152
+Штирлиц,26,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,13454;-10090606;-10069690;-10026343;-10026376
+кризис,24,finance_economy,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-1022400002;372016;384960;407808;424793
+любовь,23,family_relationships,confident,The raw tag has a direct semantic match to the assigned macro-category.,517902;544364;626480;640891;645125
+автобус,22,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,14839;14688;55806;83050;144273
+кредиты,22,finance_economy,confident,The raw tag has a direct semantic match to the assigned macro-category.,287066;305943;366606;403874;481295
+санкции,22,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",38155;366608;693337;693861;710376
+Трамп,22,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",838880;848836;863861;868908;868909
+Сочи 2014,21,sport,confident,The raw tag has a direct semantic match to the assigned macro-category.,236680;273876;300565;305653;313780
+Винни-Пух,20,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-413100001;-421900013;-482900001;-502400019;14238
+лифт,20,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,15133;12747;-42500015;-1042400016;-2022600009
+пиво,20,alcohol_smoking_drugs,confident,The raw tag has a direct semantic match to the assigned macro-category.,-92800005;-92500004;-101900001;-111800005;-122800008
+пошлые,19,sex_gender,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,433438;544377;551095;551078;563125
+apple,18,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,433611;457066;457067;456924;456925
+армянское радио,18,literature_folklore_characters,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,11078;-22200004;-111700002;-1121300004;-2022500002
+тараканы,18,animals,confident,The raw tag has a direct semantic match to the assigned macro-category.,-83000010;96924;190442;231690;324411
+чукча,18,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-461600026;12064;13822;13538;12572
+юмор,18,absurd_philosophy,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-412800006;-9994350;-9969154;138728;158343
+Абрамович,17,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",54905;73707;102350;190074;257792
+Буратино,17,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-1102800003;-2063000006;-10080384;-9990015;-9969370
+золотая рыбка,17,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,23387;97547;96921;110876;262488
+Билл Гейтс,16,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,15241;12634;-1102300006;-10069736;-9974722
+метро,16,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,88624;133542;145531;170603;195378
+нанотехнологии,16,science_space,confident,The raw tag has a direct semantic match to the assigned macro-category.,287588;301456;305439;313977;313867
+сбербанк,16,finance_economy,confident,The raw tag has a direct semantic match to the assigned macro-category.,-32900001;-2032300009;132915;476335;658674
+животные,15,animals,confident,The raw tag has a direct semantic match to the assigned macro-category.,15195;-10090672;346683;367556;375959
+почта,15,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",12746;14890;106544;569851;626488
+рыбалка,15,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-9963400;51769;88807;262488;329586
+таможня,15,law_crime,confident,The raw tag has a direct semantic match to the assigned macro-category.,-451800002;-451500002;13883;-22800002;-52800003
+Челябинск,15,cities_places,confident,The raw tag has a direct semantic match to the assigned macro-category.,-2012000004;38356;319008;403482;461794
+8 марта,14,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,-2033100006;-10099588;83764;218578;389211
+британские ученые,14,science_space,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",507818;522700;538184;570064;587266
+грипп,14,health_medicine,confident,The raw tag has a direct semantic match to the assigned macro-category.,-1022300006;195990;218579;224928;394866
+демократия,14,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",351528;385732;419915;443534;503031
+Иван-царевич,14,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-471700007;-482400015;-1022800001;-10059098;-10037692
+инструкции,14,textual_forms,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",14950;-122600010;-10099593;-10095288;-10069707
+фсб,14,army_police,confident,The raw tag has a direct semantic match to the assigned macro-category.,-2042200003;-10099570;64126;121102;125786
+23 февраля,13,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,-2022500003;-2022400010;329701;333587;438363
+жкх,13,consumer_services,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",527579;587264;645494;822759;908897
+Красная Шапочка,13,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-502500006;-522900001;14779;15197;-42500010
+бесплатное,12,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",145368;242342;305954;389203;461509
+Колобок,12,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,15240;-1102500002;-10018497;-9989983;-9980545
+Муму,12,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-61100003;-10053117;-10026340;73127;101308
+сантехник,12,work_professions,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",13860;-1062300001;375965;481849;532915
+ии,11,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,43002;329702;570043;924488;1000357
+конец света,11,absurd_philosophy,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-492700006;-9989985;242830;319662;456923
+маршрутка,11,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,18955;126769;126173;411597;415349
+Обама,11,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",381101;491291;502858;508177;562886
+охота,11,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",186303;398854;403614;419480;443940
+Валуев,10,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",319845;337590;381310;403879;403731
+дача,10,everyday_life,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",127032;305274;337987;403725;636501
+егэ,10,education_children,confident,The raw tag has a direct semantic match to the assigned macro-category.,87681;366616;411593;438365;452868
+Навальный,10,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",532781;626619;879449;924462;972498
+пасха,10,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,-1071800005;-10053072;-9969570;88620;342388
+пожарный,10,work_professions,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",15459;-81800003;-1042400009;-9951604;38879
+Березовский,9,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",-1022300003;-1032400003;-1092900002;-2012900002;-2072700010
+война,9,army_police,confident,The raw tag has a direct semantic match to the assigned macro-category.,496644;581391;710541;760857;884253
+Карлсон,9,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-433100007;-2022700006;59543;231303;258241
+Пушкин,9,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-412600006;-432300023;-502400005;486609;914900
+троллейбус,9,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,-413000002;-413000003;-502300006;-123000004;-1032800007
+богатыри,8,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-422700001;-122300006;-10037708;23822;219586
+Брежнев,8,soviet_history_politics,confident,The raw tag has a direct semantic match to the assigned macro-category.,12445;12567;-62700001;394859;438665
+Сталин,8,soviet_history_politics,confident,The raw tag has a direct semantic match to the assigned macro-category.,-412600006;-61100002;38513;363525;456953
+трамвай,8,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,14840;10444;-10018517;-9974900;292770
+Чебурашка,8,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,13012;-9994339;29024;106176;164180
+веган,7,food_diet,confident,The raw tag has a direct semantic match to the assigned macro-category.,-9962881;672964;795422;924314;962216
+мультфильмы,7,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,219586;649719;727554;909233;1054053
+хоккей,7,sport,confident,The raw tag has a direct semantic match to the assigned macro-category.,438665;438368;438369;438378;513276
+цитаты,7,textual_forms,formal_or_technical,"The tag denotes a text form, medium, service, or technical object rather than a topical gold label.",-10095243;-9989987;201337;1352936;1363366
+1 апреля,6,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10090693;337596;522261;693334;939399
+брюнетки,6,sex_gender,debatable,A site tag can carry several cultural or stylistic readings; the macro-category is a semantic approximation.,-2062100002;319657;350766;433595;899033
+Вконтакте,6,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,376492;587056;727536;939894;1208368
+Куклачев,6,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10085919;350778;543918;563164;569829
+покемоны,6,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,-9969380;839159;839168;839173;838879
+Прохоров,6,politics_power,broad_category,"The observed tag is broad, so the mapping is intentionally coarse and should be interpreted cautiously.",438672;438673;517691;517692;517895
+Гарри Поттер,5,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,313969;318999;376117;756241;914878
+трактор,5,transport,confident,The raw tag has a direct semantic match to the assigned macro-category.,12771;102253;126169;282625;452625
+Адам и Ева,4,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,12924;102659;367478;750115
+Донцова,4,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,252837;372034;376342;939572
+Каренина,4,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,97124;125174;262888;677361
+семья,4,family_relationships,confident,The raw tag has a direct semantic match to the assigned macro-category.,1510053;1525899;1548651;1562255
+14 февраля,3,religion_holidays,confident,The raw tag has a direct semantic match to the assigned macro-category.,333587;807494;994895
+Мазай,3,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,73127;87843;461330
+Хоттабыч,3,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10026357;252843;351259
+Чак Норрис,3,media_popculture,confident,The raw tag has a direct semantic match to the assigned macro-category.,924477;1123865;1562246
+telegram,2,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,945430;1591560
+Баба-Яга,2,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-441800002;77819
+ммм,2,finance_economy,confident,The raw tag has a direct semantic match to the assigned macro-category.,-82600009;371441
+Онищенко,2,health_medicine,confident,The raw tag has a direct semantic match to the assigned macro-category.,230841;292769
+Перельман,2,science_space,confident,The raw tag has a direct semantic match to the assigned macro-category.,247604;448446
+Сусанин,2,literature_folklore_characters,confident,The raw tag has a direct semantic match to the assigned macro-category.,-10059110;-9986459
+твиттер,2,it_internet,confident,The raw tag has a direct semantic match to the assigned macro-category.,471273;592703

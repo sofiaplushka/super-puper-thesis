@@ -584,24 +584,25 @@ def write_executed_notebook(df: pd.DataFrame, final_selection: pd.DataFrame, met
         ),
     ]
     selection_dict = final_selection.iloc[0].to_dict() if not final_selection.empty else {}
-    nb.metadata["codex_execution_note"] = json.loads(json.dumps(
+    nb.metadata["execution_note"] = json.loads(json.dumps(
         {
             "created_at": datetime.now().isoformat(timespec="seconds"),
             "rows": int(len(df)),
             "final_selection": selection_dict,
+            "environment": "local nbclient execution summary",
         },
         default=str,
     ))
     client = NotebookClient(nb, timeout=900, kernel_name="python3", resources={"metadata": {"path": "."}})
     client.execute()
-    nbformat.write(nb, "notebooks/tagged_corpus_analysis_executed_colab.ipynb")
+    nbformat.write(nb, "notebooks/tagged_corpus_analysis_execution_summary.ipynb")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="data/processed/anekdots_tagged_clustered.csv")
     parser.add_argument("--search", default="outputs/tables/clustering_search_all_runs.csv")
-    parser.add_argument("--skip-notebook", action="store_true")
+    parser.add_argument("--write-notebook", action="store_true")
     args = parser.parse_args()
 
     for folder in ["outputs/tables", "outputs/figures", "outputs/report_notes", "notebooks"]:
@@ -720,7 +721,7 @@ def main() -> int:
     save_search_plot(search)
     save_year_coverage(df)
     write_final_reports(final_row, before_after, metrics, cards, search)
-    if not args.skip_notebook:
+    if args.write_notebook:
         write_executed_notebook(df, final_selection, metrics)
 
     append_progress(
