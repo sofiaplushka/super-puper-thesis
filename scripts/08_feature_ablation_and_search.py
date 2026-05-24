@@ -178,9 +178,8 @@ def feature_by_name(name: str, features: dict[str, np.ndarray]) -> np.ndarray:
     return normalize(np.hstack([dense * dw, lexical * lw]), norm="l2").astype("float32", copy=False)
 
 
-def leiden_labels(values: np.ndarray, k: int, resolution: float, seed: int, metric: str) -> np.ndarray:
+def build_leiden_graph(values: np.ndarray, k: int, metric: str):
     import igraph as ig
-    import leidenalg
 
     k = min(k, max(2, len(values) - 1))
     nn = NearestNeighbors(n_neighbors=k + 1, metric=metric)
@@ -199,6 +198,12 @@ def leiden_labels(values: np.ndarray, k: int, resolution: float, seed: int, metr
     graph = ig.Graph(n=len(values), edges=edges, directed=False)
     graph.es["weight"] = weights
     graph.simplify(combine_edges={"weight": "mean"})
+    return graph
+
+
+def leiden_labels_from_graph(graph, resolution: float, seed: int) -> np.ndarray:
+    import leidenalg
+
     part = leidenalg.find_partition(
         graph,
         leidenalg.RBConfigurationVertexPartition,
@@ -209,10 +214,15 @@ def leiden_labels(values: np.ndarray, k: int, resolution: float, seed: int, metr
     return np.asarray(part.membership)
 
 
+def leiden_labels(values: np.ndarray, k: int, resolution: float, seed: int, metric: str) -> np.ndarray:
+    return leiden_labels_from_graph(build_leiden_graph(values, k, metric), resolution, seed)
+
+
 def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: pd.DataFrame, seed: int) -> pd.DataFrame:
     output_path = Path("outputs/tables/clustering_search_all_runs.csv")
     partial_path = Path("outputs/tables/clustering_search_partial.csv")
-    selected = list(dict.fromkeys(list(ablation["feature_set"].head(4)) + ["dense_bge_pca", "tfidf_word_svd", "tfidf_char_svd"]))
+    selected = list(dict.fromkeys(list(ablation["feature_set"].head(3)) + ["dense_bge_pca", "tfidf_word_svd", "tfidf_char_svd"]))
+    hdbscan_selected = set(selected[:2] + ["dense_bge_pca"])
     rows = []
 
     def flush() -> None:
@@ -226,11 +236,18 @@ def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: p
 
     for name in selected:
         values = feature_by_name(name, features)
-        for k in [8, 10, 15, 20, 30, 40, 50, 75]:
-            for resolution in [0.2, 0.35, 0.5, 0.65, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5]:
+        for k in [10, 15, 20, 30, 50, 75]:
+            try:
+                graph = build_leiden_graph(values, k, "cosine")
+            except Exception as exc:
+                graph = None
+                add_row({"feature_set": name, "method": "leiden", "params": f"k={k};graph_build", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+            for resolution in [0.35, 0.5, 0.65, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5]:
                 for run_seed in [1, 7, 42]:
                     try:
-                        labels = leiden_labels(values, k, resolution, run_seed, "cosine")
+                        if graph is None:
+                            continue
+                        labels = leiden_labels_from_graph(graph, resolution, run_seed)
                         add_row(
                             evaluate_labels(
                                 df,
@@ -257,30 +274,36 @@ def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: p
                 add_row(evaluate_labels(df, labels, {"feature_set": name, "method": "agglomerative", "metric": "cosine", "params": f"n_clusters={n_clusters};linkage=average"}))
             except Exception as exc:
                 add_row({"feature_set": name, "method": "agglomerative", "params": f"n_clusters={n_clusters}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
-        for min_cluster_size in [20, 30, 50, 75, 100, 150]:
-            for min_samples in [5, 10, 20, 30]:
-                for method in ["eom", "leaf"]:
-                    try:
-                        labels = HDBSCAN(
-                            min_cluster_size=min_cluster_size,
-                            min_samples=min_samples,
-                            metric="euclidean",
-                            cluster_selection_method=method,
-                        ).fit_predict(values)
-                        add_row(
-                            evaluate_labels(
-                                df,
-                                labels,
-                                {
-                                    "feature_set": name,
-                                    "method": "hdbscan",
-                                    "metric": "euclidean",
-                                    "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}",
-                                },
-                            )
+        if name in hdbscan_selected:
+            for min_cluster_size, min_samples, method in [
+                (30, 5, "eom"),
+                (50, 10, "eom"),
+                (75, 10, "eom"),
+                (100, 20, "eom"),
+                (150, 20, "eom"),
+                (50, 10, "leaf"),
+            ]:
+                try:
+                    labels = HDBSCAN(
+                        min_cluster_size=min_cluster_size,
+                        min_samples=min_samples,
+                        metric="euclidean",
+                        cluster_selection_method=method,
+                    ).fit_predict(values)
+                    add_row(
+                        evaluate_labels(
+                            df,
+                            labels,
+                            {
+                                "feature_set": name,
+                                "method": "hdbscan",
+                                "metric": "euclidean",
+                                "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}",
+                            },
                         )
-                    except Exception as exc:
-                        add_row({"feature_set": name, "method": "hdbscan", "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+                    )
+                except Exception as exc:
+                    add_row({"feature_set": name, "method": "hdbscan", "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
         flush()
     result = pd.DataFrame(rows).sort_values("balanced_score", ascending=False)
     result.to_csv(output_path, index=False, encoding="utf-8")

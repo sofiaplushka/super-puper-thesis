@@ -25,6 +25,10 @@ python scripts/02_compute_embeddings.py --input data/processed/anekdots_tagged.c
 python scripts/03_cluster_and_visualize.py --dataset data/processed/anekdots_tagged.csv --embeddings data/embeddings/tagged_bge_m3.npy --pca data/embeddings/tagged_pca128.npy --k 30 --resolution 1.0 --seed 42
 python scripts/04_validate_clusters_with_tags.py --clustered data/processed/anekdots_tagged_clustered.csv --embeddings data/embeddings/tagged_bge_m3.npy --pca data/embeddings/tagged_pca128.npy --tag-map config/tag_macro_categories.yml --seed 42
 python scripts/05_analyze_practical_weaknesses.py --dataset data/processed/anekdots_tagged_clustered.csv --validation-dir outputs/tables --seed 42
+python scripts/06_remap_macro_tags.py
+python scripts/07_compute_exact_metrics.py
+python scripts/08_feature_ablation_and_search.py
+python scripts/09_select_final_and_interpret.py
 ```
 
 Embedding computation was executed in Google Colab on a Tesla T4 through the
@@ -143,6 +147,57 @@ Added:
 - `outputs/report_notes/README.md`
 - `notebooks/tagged_corpus_analysis.ipynb`
 
+### Strong metric improvement extension
+
+After the initial seven-stage run, the tag-to-macro mapping was expanded so all
+158 observed raw tags map to explicit macro-categories. The previous `other`
+bucket had 1,830 tag occurrences; after remapping it has **0**. Tags remain
+validation and interpretation data only; clustering features are derived from
+joke text, text embeddings, TF-IDF/SVD text features, and non-label structural
+text properties.
+
+Generated:
+
+- `outputs/report_notes/05_audit_before_strong_metric_improvement.md`
+- `outputs/report_notes/06_macro_tag_remap_strong.md`
+- `outputs/report_notes/07_validation_metrics_exact.md`
+- `outputs/report_notes/08_feature_ablation.md`
+- `outputs/report_notes/09_strong_clustering_search.md`
+- `outputs/report_notes/10_final_clustering_selection.md`
+- `outputs/report_notes/11_cluster_interpretation.md`
+- `outputs/tables/feature_ablation_metrics.csv`
+- `outputs/tables/clustering_search_all_runs.csv`
+- `outputs/tables/final_clustering_selection.csv`
+- `outputs/tables/final_metrics_summary.csv`
+- `outputs/tables/cluster_final_interpretation_cards.csv`
+- `outputs/figures/umap2d_final.html`
+- `outputs/figures/umap3d_final.html`
+- `outputs/figures/umap2d_final.png`
+- `outputs/figures/umap3d_final.png`
+- `notebooks/tagged_corpus_analysis_executed_colab.ipynb`
+
+Final selected configuration:
+
+- Method: **Leiden**
+- Feature set: **hybrid BGE/PCA + lexical SVD**, `dense_weight=0.75`, `lexical_weight=0.25`
+- Parameters: `k=75`, `resolution=2.0`, `seed=7`
+- Clusters: **20**
+- Largest cluster share: **0.1291**
+
+Before/after metrics against the remapped old Leiden baseline:
+
+- Excluding-other ARI: **0.1967 -> 0.2768** (`+0.0802`)
+- Excluding-other V-measure: **0.3109 -> 0.3871** (`+0.0762`)
+- Exact pairwise multilabel F1: **0.2846 -> 0.3388** (`+0.0542`)
+- Exact pairwise precision: **0.2297 -> 0.3519** (`+0.1221`)
+- Largest cluster share: **0.2046 -> 0.1291**
+
+The strict stretch thresholds from the follow-up goal were not all reached:
+ARI did not improve by `+0.15`, V-measure did not reach `0.40` under the
+8-25-cluster constraint, and pairwise F1 remained below `0.35` on the full
+multi-label set. The single-clear-label subset reached pairwise F1 **0.3541**
+and V-measure **0.4198**. These results are reported as-is rather than inflated.
+
 ## Rerun locally
 
 ```bash
@@ -171,7 +226,8 @@ Then download or commit the generated `data/embeddings/*` and
 
 ## Unresolved issues
 
-No blocking issue is known at this point. The main methodological limitation is
-that the corpus is tagged-only and tags are silver labels, not expert gold
-labels.
-
+No blocking issue is known at this point. The main methodological limitations
+are that the corpus is tagged-only, tags are silver labels rather than expert
+gold labels, and the strongest honest final configuration improves the metrics
+substantially but does not meet every stretch target from the metric-improvement
+specification.

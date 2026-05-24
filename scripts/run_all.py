@@ -39,9 +39,53 @@ def main() -> int:
     )
     run([py, "scripts/04_validate_clusters_with_tags.py"])
     run([py, "scripts/05_analyze_practical_weaknesses.py"])
+    run(
+        [py, "scripts/06_remap_macro_tags.py"],
+        skip=args.skip_existing
+        and exists_all(
+            [
+                "outputs/tables/top_macro_tags_before_after.csv",
+                "outputs/tables/unmapped_tags_after_remap.csv",
+                "outputs/report_notes/06_macro_tag_remap_strong.md",
+            ]
+        ),
+    )
+    run(
+        [py, "scripts/07_compute_exact_metrics.py"],
+        skip=args.skip_existing
+        and exists_all(
+            [
+                "outputs/tables/metrics_all.csv",
+                "outputs/tables/pairwise_multilabel_metrics_exact.csv",
+                "outputs/report_notes/07_validation_metrics_exact.md",
+            ]
+        ),
+    )
+    run(
+        [py, "scripts/08_feature_ablation_and_search.py"],
+        skip=args.skip_existing
+        and exists_all(
+            [
+                "outputs/tables/feature_ablation_metrics.csv",
+                "outputs/tables/clustering_search_all_runs.csv",
+                "outputs/report_notes/09_strong_clustering_search.md",
+            ]
+        ),
+    )
+    run(
+        [py, "scripts/09_select_final_and_interpret.py"],
+        skip=args.skip_existing
+        and exists_all(
+            [
+                "outputs/tables/final_clustering_selection.csv",
+                "outputs/tables/final_metrics_summary.csv",
+                "outputs/report_notes/11_cluster_interpretation.md",
+                "notebooks/tagged_corpus_analysis_executed_colab.ipynb",
+            ]
+        ),
+    )
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

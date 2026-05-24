@@ -1,13 +1,13 @@
 cluster_leiden,size,dominant_macro_tag,dominant_macro_share,suggested_cluster_name,interpretation_confidence,central_example_ids,borderline_example_ids,caveat
-0,1127,politics_power,0.4441602728047741,politics_power cluster,medium,"853356, 1124090, 429022, 1172008, 538320","318640, 1363563, 507965, 329588, -2012900002",Mixed tags and humor formulas may blur this cluster.
-1,746,family_relationships,0.5025316455696203,family_relationships cluster,medium,"672713, 502637, 517902, 812364, 1154529","1514979, -2022500003, 1505148, 898709, 1155217",Mixed tags and humor formulas may blur this cluster.
-2,722,family_relationships,0.3423423423423423,family_relationships cluster,low,"727705, 597609, 756236, 817881, 527762","15304, 491537, 503013, -482400001, 551085",Mixed tags and humor formulas may blur this cluster.
-3,529,other,0.3826714801444043,other cluster,low,"164180, 97126, 456949, 1182581, 716408","133096, -10069690, 1413158, 812581, -10011063",Mixed tags and humor formulas may blur this cluster.
-4,515,other,0.4915572232645403,other cluster,medium,"13624, 59993, 359398, 13690, -441900005","1515436, -1022200010, -9969570, -10069687, 1568996",Mixed tags and humor formulas may blur this cluster.
-5,504,other,0.4310344827586206,other cluster,medium,"242342, 693695, 1000165, 517713, 1440247","23605, -73100004, 1033966, 19488, 863510",Mixed tags and humor formulas may blur this cluster.
-6,441,education_children,0.6236559139784946,education_children cluster,medium,"13722, -472200006, 15075, -442800020, -2072700003","359267, -10037763, -451100034, -451100021, -9951056",Mixed tags and humor formulas may blur this cluster.
-7,230,education_children,0.7925311203319502,education_children cluster,high,"15595, -10085867, -461600024, -482700002, 15580","1486799, 663286, 403719, 456811, 575545",Dominant macro tag is relatively concentrated.
-8,217,work_professions,0.5625,work_professions cluster,medium,"300741, 411574, 868461, 252830, 898401","858105, 1510060, -10059113, -1071800006, 304912",Mixed tags and humor formulas may blur this cluster.
-9,209,everyday_life,0.4101382488479262,everyday_life cluster,medium,"438692, 801653, 139271, 522591, 231440","626478, 704174, 983042, 252843, 372035",Mixed tags and humor formulas may blur this cluster.
-10,176,everyday_life,0.3802083333333333,everyday_life cluster,low,"1137947, -9999691, 1369166, 1153563, 672718","224708, 732591, 1123864, -9999681, -9999662",Mixed tags and humor formulas may blur this cluster.
-11,93,other,0.8817204301075269,other cluster,high,"319664, 704181, 1302243, 704746, 300934","884254, 190569, -1022500010, 676874, 438672",Dominant macro tag is relatively concentrated.
+0,1127,politics_power,0.4171974522292994,politics_power cluster,medium,"853356, 1124090, 429022, 1172008, 538320","318640, 1363563, 507965, 329588, -2012900002",Mixed tags and humor formulas may blur this cluster.
+1,746,sex_gender,0.3992718446601941,sex_gender cluster,low,"672713, 502637, 517902, 812364, 1154529","1514979, -2022500003, 1505148, 898709, 1155217",Mixed tags and humor formulas may blur this cluster.
+2,722,family_relationships,0.203125,family_relationships cluster,low,"727705, 597609, 756236, 817881, 527762","15304, 491537, 503013, -482400001, 551085",Mixed tags and humor formulas may blur this cluster.
+3,529,animals,0.1661016949152542,animals cluster,low,"164180, 97126, 456949, 1182581, 716408","133096, -10069690, 1413158, 812581, -10011063",Mixed tags and humor formulas may blur this cluster.
+4,515,transport,0.3041958041958042,transport cluster,low,"13624, 59993, 359398, 13690, -441900005","1515436, -1022200010, -9969570, -10069687, 1568996",Mixed tags and humor formulas may blur this cluster.
+5,504,absurd_philosophy,0.2359346642468239,absurd_philosophy cluster,low,"242342, 693695, 1000165, 517713, 1440247","23605, -73100004, 1033966, 19488, 863510",Mixed tags and humor formulas may blur this cluster.
+6,441,education_children,0.6131078224101479,education_children cluster,medium,"13722, -472200006, 15075, -442800020, -2072700003","359267, -10037763, -451100034, -451100021, -9951056",Mixed tags and humor formulas may blur this cluster.
+7,230,education_children,0.764,education_children cluster,high,"15595, -10085867, -461600024, -482700002, 15580","1486799, 663286, 403719, 456811, 575545",Dominant macro tag is relatively concentrated.
+8,217,health_medicine,0.6208333333333333,health_medicine cluster,medium,"300741, 411574, 868461, 252830, 898401","858105, 1510060, -10059113, -1071800006, 304912",Mixed tags and humor formulas may blur this cluster.
+9,209,transport,0.3682008368200837,transport cluster,low,"438692, 801653, 139271, 522591, 231440","626478, 704174, 983042, 252843, 372035",Mixed tags and humor formulas may blur this cluster.
+10,176,religion_holidays,0.3578431372549019,religion_holidays cluster,low,"1137947, -9999691, 1369166, 1153563, 672718","224708, 732591, 1123864, -9999681, -9999662",Mixed tags and humor formulas may blur this cluster.
+11,93,sport,0.7575757575757576,sport cluster,high,"319664, 704181, 1302243, 704746, 300934","884254, 190569, -1022500010, 676874, 438672",Dominant macro tag is relatively concentrated.

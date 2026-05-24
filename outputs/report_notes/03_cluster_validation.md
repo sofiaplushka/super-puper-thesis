@@ -6,17 +6,17 @@ are handled explicitly through cluster-tag matrices and pairwise multilabel metr
 ## Single-label external metrics
 |   adjusted_rand_index |   adjusted_mutual_info |   homogeneity |   completeness |   v_measure |   rows |
 |----------------------:|-----------------------:|--------------:|---------------:|------------:|-------:|
-|              0.133207 |               0.262534 |        0.2854 |       0.248774 |    0.265831 |   5243 |
+|              0.221984 |               0.330304 |      0.297858 |       0.390542 |    0.337961 |   4921 |
 
 ## Primary macro approximation metrics
 |   adjusted_rand_index |   adjusted_mutual_info |   homogeneity |   completeness |   v_measure |   rows | label_source                                    |
 |----------------------:|-----------------------:|--------------:|---------------:|------------:|-------:|:------------------------------------------------|
-|              0.139706 |               0.257268 |      0.278402 |       0.244614 |    0.260417 |   5509 | primary_macro_tag_all_rows_weaker_approximation |
+|              0.214773 |               0.312003 |      0.281898 |       0.367491 |    0.319054 |   5509 | primary_macro_tag_all_rows_weaker_approximation |
 
 ## Pairwise multilabel metrics
 | exact   |   total_possible_pairs |   pairs_evaluated |   true_positive |   false_positive |   false_negative |   true_negative |   precision |   recall |       f1 |
 |:--------|-----------------------:|------------------:|----------------:|-----------------:|-----------------:|----------------:|------------:|---------:|---------:|
-| False   |               15171786 |           1000000 |           38571 |            77919 |           142941 |          740569 |     0.33111 | 0.212498 | 0.258864 |
+| False   |               15171786 |           1000000 |           26664 |            89826 |            44802 |          838708 |    0.228895 |   0.3731 | 0.283726 |
 
 ## Internal metrics
 | metric                |       value | space            |

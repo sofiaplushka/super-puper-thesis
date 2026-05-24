@@ -1,3 +1,7 @@
 - 2026-05-24T17:29:25: Phase 2 remap complete: other 1830 -> 0 (100.0% reduction).
 - 2026-05-24T17:30:58: Phase 3 exact metrics complete: excluding_other ARI=0.197, V=0.311, exact pairwise F1=0.285.
 - 2026-05-24T17:35:02: Phase 4 feature ablation complete: best=hybrid_dense_lexical_structural_dw1.0_lw0.25_sw0.1 score=0.195.
+- 2026-05-24T18:08:58: Phase 4 feature ablation complete: best=hybrid_dense_lexical_structural_dw1.0_lw0.25_sw0.1 score=0.195.
+- 2026-05-24T18:21:25: Phase 4 feature ablation complete: best=hybrid_dense_lexical_structural_dw1.0_lw0.25_sw0.1 score=0.195.
+- 2026-05-24T18:49:26: Phase 5 clustering search complete: best=leiden hybrid_dense_lexical_dw0.75_lw0.25 score=0.328, ARI_ex_other=0.275, V=0.410, F1=0.318.
+- 2026-05-24T18:51:05: Phase 6-8 final selection complete: method=leiden, feature=hybrid_dense_lexical_dw0.75_lw0.25, clusters=20, ARI=0.277, V=0.387, F1=0.339.

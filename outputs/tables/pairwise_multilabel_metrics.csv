@@ -1,2 +1,2 @@
-total_pairs,model_positive_pairs,label_positive_pairs,true_positive,false_positive,false_negative,true_negative,precision,recall,f1,exact
-15171786,1759639,1080666,404198,1355441,676468,12735679,0.2297050701876919,0.37402675757357035,0.28461591272768244,True
+exact,total_possible_pairs,pairs_evaluated,true_positive,false_positive,false_negative,true_negative,precision,recall,f1
+False,15171786,1000000,26664,89826,44802,838708,0.22889518413597734,0.3731004953404416,0.28372597842048136

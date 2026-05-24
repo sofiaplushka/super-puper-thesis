@@ -20,7 +20,7 @@
 | year_min            | 1996         | info       |
 | year_max            | 2026         | info       |
 | largest_year_share  |    0.0637139 | P1         |
-| largest_macro_share |    0.332184  | P1         |
+| largest_macro_share |    0.115447  | P1         |
 
 ## Что можно добавить в отчёт без новых вычислений
 Использовать таблицы coverage, cluster interpretability, validation metrics и weakness diagnostics.

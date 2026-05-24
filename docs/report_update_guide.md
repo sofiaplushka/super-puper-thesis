@@ -106,6 +106,38 @@ Important figures:
 - `outputs/figures/year_coverage.html`
 - `outputs/figures/month_coverage.html`
 
+## Final improved clustering wording
+
+Use this wording after the initial validation discussion:
+
+> A follow-up clustering search expanded the macro-tag mapping, removed the
+> residual `other` macro bucket, and compared dense semantic, lexical TF-IDF/SVD,
+> structural, and hybrid text-only feature sets. Tags were used only for
+> validation and configuration ranking, not as clustering input. The selected
+> final model was Leiden clustering over a hybrid BGE/PCA plus lexical feature
+> space with 20 clusters.
+
+Final improved values:
+
+- Final method: **Leiden**, `k=75`, `resolution=2.0`, `seed=7`
+- Final feature set: **hybrid_dense_lexical_dw0.75_lw0.25**
+- Final clusters: **20**
+- Largest cluster share: **0.1291**
+- Excluding-other ARI: **0.2768** (`+0.0802` vs remapped old Leiden)
+- Excluding-other V-measure: **0.3871** (`+0.0762`)
+- Exact pairwise multilabel F1: **0.3388** (`+0.0542`)
+- Single-clear-label V-measure: **0.4198**
+- Single-clear-label pairwise F1: **0.3541**
+
+Use this limitation wording:
+
+> The search improved all main external metrics and reduced cluster imbalance,
+> but it did not fully reach the most ambitious stretch thresholds. This is
+> expected for a multi-label humor corpus where site tags are noisy silver
+> labels and jokes often mix several themes. The result should be presented as
+> an honest improvement in alignment between unsupervised clusters and external
+> tags, not as supervised-quality topic classification.
+
 ## Checklist of thesis sections to edit
 
 - Dataset description: replace old corpus description with tagged-only corpus.
@@ -125,6 +157,9 @@ python scripts/02_compute_embeddings.py --mode local
 python scripts/03_cluster_and_visualize.py
 python scripts/04_validate_clusters_with_tags.py
 python scripts/05_analyze_practical_weaknesses.py
+python scripts/06_remap_macro_tags.py
+python scripts/07_compute_exact_metrics.py
+python scripts/08_feature_ablation_and_search.py
+python scripts/09_select_final_and_interpret.py
 python scripts/run_all.py --skip-existing
 ```
-

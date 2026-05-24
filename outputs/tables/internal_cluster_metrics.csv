@@ -2,6 +2,6 @@ metric,value,space
 silhouette_cosine,0.03657016158103943,embedding_or_pca
 calinski_harabasz,58.278998119361155,pca
 davies_bouldin,4.800708799720026,pca
-modularity,0.5358356252247378,knn_graph
+modularity,,knn_graph
 cluster_count,12.0,labels
 largest_cluster_share,0.204574332909784,labels
