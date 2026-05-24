@@ -31,7 +31,10 @@ def unmapped_tags(df: pd.DataFrame, tag_map: str) -> pd.DataFrame:
         for tag in tags:
             if normalize_tag(tag) not in lookup:
                 counts[tag] = counts.get(tag, 0) + 1
-    return pd.DataFrame([{"tag_raw": k, "count": v} for k, v in counts.items()]).sort_values("count", ascending=False)
+    result = pd.DataFrame([{"tag_raw": k, "count": v} for k, v in counts.items()])
+    if result.empty:
+        return pd.DataFrame(columns=["tag_raw", "count"])
+    return result.sort_values("count", ascending=False)
 
 
 def single_label_metrics(df: pd.DataFrame) -> pd.DataFrame:
@@ -144,4 +147,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

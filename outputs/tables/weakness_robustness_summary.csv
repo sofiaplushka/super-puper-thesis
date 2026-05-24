@@ -1,0 +1,6 @@
+issue,value,severity
+cluster_count_min,3.0,info
+cluster_count_max,20.0,P1
+largest_cluster_share_max,0.6042838990742422,P1
+stability_ari_mean,0.4519128581719947,P1
+stability_ami_mean,0.5720204773567076,P1

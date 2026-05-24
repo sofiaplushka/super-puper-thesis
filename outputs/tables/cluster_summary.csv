@@ -1,0 +1,13 @@
+cluster_leiden,size,dominant_raw_tag,dominant_raw_tag_count,dominant_macro_tag,dominant_macro_tag_count,year_min,year_max
+0,1127,Путин,158,politics_power,521,1996,2026
+1,746,девушки,223,family_relationships,397,1997,2025
+2,722,муж и жена,138,family_relationships,266,1996,2026
+3,529,кошки,60,other,212,1996,2026
+4,515,гаи,88,other,262,1996,2026
+5,504,о жизни,120,other,225,1997,2026
+6,441,вовочка,219,education_children,290,1996,2026
+7,230,студент,172,education_children,191,1996,2025
+8,217,врачи,121,work_professions,126,1997,2025
+9,209,авто,77,everyday_life,89,1996,2025
+10,176,новогодний,66,everyday_life,73,2000,2026
+11,93,спорт,42,other,82,1998,2025
