@@ -34,9 +34,11 @@ python scripts/12_macro_tag_mapping_audit.py
 python scripts/10_build_execution_summary_notebook.py
 ```
 
-Embedding computation was executed in Google Colab on a Tesla T4 through the
-temporary bridge supplied by the user. Colab bridge code, bridge tokens, ngrok
-URLs, logs, and secrets were not copied into this repository.
+Google Colab was used only for GPU embedding generation on a Tesla T4 through
+the temporary bridge supplied by the user. Colab bridge code, bridge tokens,
+ngrok URLs, logs, and secrets were not copied into this repository. The executed
+summary notebook referenced below is a local reproducibility summary, not a
+claim that the notebook itself was executed in Colab.
 
 ## Results by prompt
 
