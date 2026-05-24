@@ -10,8 +10,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 
-from thesis_pipeline.tag_mapping import load_macro_mapping, macro_lookup, normalize_tag, parse_json_list
-
+from thesis_pipeline.tag_mapping import (
+    load_macro_mapping,
+    macro_lookup,
+    normalize_tag,
+    parse_json_list,
+)
 
 FORMAL_MACROS = {"textual_forms", "internet_memes", "consumer_services"}
 FORMAL_TAG_HINTS = {
@@ -24,7 +28,12 @@ FORMAL_TAG_HINTS = {
     "мобильный",
     "windows",
 }
-BROAD_MACROS = {"everyday_life", "absurd_philosophy", "politics_power", "work_professions"}
+BROAD_MACROS = {
+    "everyday_life",
+    "absurd_philosophy",
+    "politics_power",
+    "work_professions",
+}
 BROAD_TAG_HINTS = {"о жизни", "работа", "политика", "деньги", "новые русские", "кризис"}
 DEBATABLE_TAG_HINTS = {
     "армянское радио",
@@ -72,8 +81,12 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="data/processed/anekdots_tagged.csv")
     parser.add_argument("--mapping", default="config/tag_macro_categories.yml")
-    parser.add_argument("--output", default="outputs/tables/macro_tag_mapping_audit.csv")
-    parser.add_argument("--note", default="outputs/report_notes/12_macro_tag_mapping_audit.md")
+    parser.add_argument(
+        "--output", default="outputs/tables/macro_tag_mapping_audit.csv"
+    )
+    parser.add_argument(
+        "--note", default="outputs/report_notes/12_macro_tag_mapping_audit.md"
+    )
     args = parser.parse_args()
 
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
@@ -112,10 +125,20 @@ def main() -> int:
             }
         )
     audit = pd.DataFrame(rows)
-    audit.to_csv(args.output, index=False, encoding="utf-8")
+    audit.to_csv(args.output, index=False, encoding="utf-8", lineterminator="\n")
 
-    status_counts = audit["audit_status"].value_counts().rename_axis("audit_status").reset_index(name="count")
-    macro_counts = audit["mapped_macro_tag"].value_counts().rename_axis("mapped_macro_tag").reset_index(name="raw_tag_count")
+    status_counts = (
+        audit["audit_status"]
+        .value_counts()
+        .rename_axis("audit_status")
+        .reset_index(name="count")
+    )
+    macro_counts = (
+        audit["mapped_macro_tag"]
+        .value_counts()
+        .rename_axis("mapped_macro_tag")
+        .reset_index(name="raw_tag_count")
+    )
     debatable = audit[audit["audit_status"].eq("debatable")].head(40)
     other_count = int(audit["mapped_macro_tag"].eq("other").sum())
     note_lines = [
@@ -142,10 +165,22 @@ def main() -> int:
         "",
         "## Debatable mappings to review",
         "",
-        debatable[["raw_tag", "raw_tag_count", "mapped_macro_tag", "audit_rationale", "example_joke_ids"]].to_markdown(index=False),
+        debatable[
+            [
+                "raw_tag",
+                "raw_tag_count",
+                "mapped_macro_tag",
+                "audit_rationale",
+                "example_joke_ids",
+            ]
+        ].to_markdown(index=False),
     ]
     Path(args.note).write_text("\n".join(note_lines), encoding="utf-8")
-    print(json.dumps({"raw_tags": len(audit), "other_raw_tags": other_count}, ensure_ascii=False))
+    print(
+        json.dumps(
+            {"raw_tags": len(audit), "other_raw_tags": other_count}, ensure_ascii=False
+        )
+    )
     return 0
 
 

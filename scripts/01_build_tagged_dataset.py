@@ -20,7 +20,11 @@ def tag_counts(df: pd.DataFrame, column: str, output_name: str) -> pd.DataFrame:
         for value in values:
             counts[value] = counts.get(value, 0) + 1
     rows = [{"tag": key, "count": value} for key, value in counts.items()]
-    return pd.DataFrame(rows).sort_values(["count", "tag"], ascending=[False, True]).rename(columns={"tag": output_name})
+    return (
+        pd.DataFrame(rows)
+        .sort_values(["count", "tag"], ascending=[False, True])
+        .rename(columns={"tag": output_name})
+    )
 
 
 def write_report(
@@ -32,7 +36,9 @@ def write_report(
     path: Path,
     command: str,
 ) -> None:
-    zero = tables["coverage"].loc[tables["coverage"]["candidate_count_tagged_month"] == 0, ["year", "month"]]
+    zero = tables["coverage"].loc[
+        tables["coverage"]["candidate_count_tagged_month"] == 0, ["year", "month"]
+    ]
     examples = df.head(10).copy()
     examples["text_preview"] = examples["text"].map(lambda x: truncate_text(x, 300))
     lines = [
@@ -66,7 +72,9 @@ def write_report(
         top_macro.to_markdown(index=False),
         "",
         "## Example rows",
-        examples[["id", "year", "month", "tags_raw", "macro_tags", "text_preview"]].to_markdown(index=False),
+        examples[
+            ["id", "year", "month", "tags_raw", "macro_tags", "text_preview"]
+        ].to_markdown(index=False),
         "",
         "## Limitation",
         "This is a tagged subcorpus. It is biased toward topics that anekdot.ru tags consistently and is",
@@ -94,7 +102,12 @@ def main() -> int:
     parser.add_argument("--tag-map", default="config/tag_macro_categories.yml")
     args = parser.parse_args()
 
-    for folder in ["data/raw", "data/processed", "outputs/tables", "outputs/report_notes"]:
+    for folder in [
+        "data/raw",
+        "data/processed",
+        "outputs/tables",
+        "outputs/report_notes",
+    ]:
         Path(folder).mkdir(parents=True, exist_ok=True)
 
     settings = BuildSettings(
@@ -115,16 +128,51 @@ def main() -> int:
         raise SystemExit("Parser produced duplicate ids.")
 
     output = Path(args.output)
-    df.to_csv(output, index=False, encoding="utf-8")
-    df.to_csv("data/raw/anekdot_tagged_candidates.csv", index=False, encoding="utf-8")
-    tables["tag_dictionary"].to_csv("data/processed/tag_dictionary.csv", index=False, encoding="utf-8")
-    tables["coverage"].to_csv("outputs/tables/dataset_month_coverage.csv", index=False, encoding="utf-8")
-    tables["year_coverage"].to_csv("outputs/tables/dataset_year_coverage.csv", index=False, encoding="utf-8")
-    tables["duplicates"].to_csv("outputs/tables/duplicate_groups.csv", index=False, encoding="utf-8")
+    df.to_csv(output, index=False, encoding="utf-8", lineterminator="\n")
+    df.to_csv(
+        "data/raw/anekdot_tagged_candidates.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tables["tag_dictionary"].to_csv(
+        "data/processed/tag_dictionary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tables["coverage"].to_csv(
+        "outputs/tables/dataset_month_coverage.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tables["year_coverage"].to_csv(
+        "outputs/tables/dataset_year_coverage.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tables["duplicates"].to_csv(
+        "outputs/tables/duplicate_groups.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     top_tags = tag_counts(df, "tags_raw", "tag_raw")
     top_macro = tag_counts(df, "macro_tags", "macro_tag")
-    top_tags.to_csv("outputs/tables/top_tags.csv", index=False, encoding="utf-8")
-    top_macro.to_csv("outputs/tables/top_macro_tags.csv", index=False, encoding="utf-8")
+    top_tags.to_csv(
+        "outputs/tables/top_tags.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    top_macro.to_csv(
+        "outputs/tables/top_macro_tags.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     mapping_rows = []
     import yaml
@@ -133,7 +181,12 @@ def main() -> int:
     for macro, tags in mapping.items():
         for tag in tags:
             mapping_rows.append({"macro_tag": macro, "tag_raw": tag})
-    pd.DataFrame(mapping_rows).to_csv("data/processed/tag_macro_mapping.csv", index=False, encoding="utf-8")
+    pd.DataFrame(mapping_rows).to_csv(
+        "data/processed/tag_macro_mapping.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     command = (
         "python scripts/01_build_tagged_dataset.py "

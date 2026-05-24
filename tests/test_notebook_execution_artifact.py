@@ -2,7 +2,6 @@ from pathlib import Path
 
 import nbformat
 
-
 NOTEBOOK = Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb")
 
 

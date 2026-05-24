@@ -36,7 +36,9 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.mode == "remote":
-        print("Remote mode is configured outside this script via the Colab bridge. Falling back to local execution in the current runtime.")
+        print(
+            "Remote mode is configured outside this script via the Colab bridge. Falling back to local execution in the current runtime."
+        )
 
     out = Path(args.output_dir)
     out.mkdir(parents=True, exist_ok=True)
@@ -49,12 +51,19 @@ def main() -> int:
     pca_path = out / "tagged_pca128.npy"
     ids_path = out / "tagged_ids.npy"
     hashes_path = out / "tagged_text_hashes.csv"
-    if args.skip_existing and emb_path.exists() and pca_path.exists() and manifest_matches(manifest_path, expected):
+    if (
+        args.skip_existing
+        and emb_path.exists()
+        and pca_path.exists()
+        and manifest_matches(manifest_path, expected)
+    ):
         print(f"Reusing embeddings from {emb_path}")
         return 0
 
     texts = df[args.text_column].fillna("").astype(str).tolist()
-    embeddings, model_meta = compute_embeddings(texts, args.model, args.batch_size, normalize=True)
+    embeddings, model_meta = compute_embeddings(
+        texts, args.model, args.batch_size, normalize=True
+    )
     pca, pca_meta = compute_pca(embeddings, 128, args.seed)
     if embeddings.shape[0] != len(df) or pca.shape[0] != len(df):
         raise SystemExit("Embedding row count does not match dataset row count.")
@@ -83,4 +92,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

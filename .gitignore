@@ -19,6 +19,12 @@ docs/.codex_goal/
 docs/reference_prompts/
 docs/PASTE_THIS_GOAL.md
 docs/README.md
+.codex_goal/
+reference_prompts/
+PASTE_THIS_GOAL.md
+codex_metric_goal_pack/
+*_goal_prompts/
+*.prompt.md
 data/cache/
 outputs/cache/
 artifacts/

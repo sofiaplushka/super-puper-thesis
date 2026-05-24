@@ -21,7 +21,9 @@ def write_note(story: pd.DataFrame, output: str | Path) -> None:
     main = story[story["result_id"].eq("unsupervised_leiden_final")].iloc[0]
     hierarchical = story[story["result_id"].eq("unsupervised_leiden_level1")].iloc[0]
     supervised = story[story["result_id"].eq("supervised_tag_classifier")].iloc[0]
-    semi = story[story["result_id"].eq("semi_supervised_finetuned_clustering_holdout")].iloc[0]
+    semi = story[
+        story["result_id"].eq("semi_supervised_finetuned_clustering_holdout")
+    ].iloc[0]
     level1_comment = (
         f"The level-1 hierarchical evaluation gives V-measure {hierarchical['v_measure']:.4f} and pairwise F1 {hierarchical['pairwise_f1']:.4f}. It is a broader target and may be higher when clusters mainly confuse neighboring detailed themes."
         if hierarchical["v_measure"] >= main["v_measure"]
@@ -63,7 +65,10 @@ def write_note(story: pd.DataFrame, output: str | Path) -> None:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", default="outputs/tables/final_evaluation_story.csv")
-    parser.add_argument("--note", default="outputs/report_notes/16_final_metrics_interpretation_for_committee.md")
+    parser.add_argument(
+        "--note",
+        default="outputs/report_notes/16_final_metrics_interpretation_for_committee.md",
+    )
     args = parser.parse_args()
 
     final = pd.read_csv("outputs/tables/final_metrics_summary.csv")
@@ -74,9 +79,24 @@ def main() -> int:
     final_all = first_row(final, model="final", subset="all")
     level1 = first_row(hierarchical, label_level="level_1_broad", subset="all")
     level2 = first_row(hierarchical, label_level="level_2_detailed", subset="all")
-    supervised_best = supervised[supervised["split"].eq("test")].sort_values("micro_f1", ascending=False).iloc[0].to_dict()
-    semi_holdout = semi[(semi["split"].eq("holdout")) & (semi["selected"].eq(True))].iloc[0].to_dict()
-    semi_full = semi[(semi["split"].eq("full_corpus_label_guided")) & (semi["selected"].eq(True))].iloc[0].to_dict()
+    supervised_best = (
+        supervised[supervised["split"].eq("test")]
+        .sort_values("micro_f1", ascending=False)
+        .iloc[0]
+        .to_dict()
+    )
+    semi_holdout = (
+        semi[(semi["split"].eq("holdout")) & (semi["selected"].eq(True))]
+        .iloc[0]
+        .to_dict()
+    )
+    semi_full = (
+        semi[
+            (semi["split"].eq("full_corpus_label_guided")) & (semi["selected"].eq(True))
+        ]
+        .iloc[0]
+        .to_dict()
+    )
 
     rows = [
         {
@@ -220,7 +240,7 @@ def main() -> int:
     ]
     story = pd.DataFrame(rows)
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    story.to_csv(args.output, index=False, encoding="utf-8")
+    story.to_csv(args.output, index=False, encoding="utf-8", lineterminator="\n")
     write_note(story, args.note)
     return 0
 

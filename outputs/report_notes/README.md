@@ -19,6 +19,7 @@ Use these files to update the written thesis without rerunning the pipeline:
 - `14_supervised_tag_prediction_baseline.md` - supervised multilabel tag prediction control.
 - `15_semi_supervised_upper_bound.md` - label-guided semi-supervised clustering upper-bound.
 - `16_final_metrics_interpretation_for_committee.md` - final main-vs-auxiliary metric story.
+- `18_code_cleanup_and_reproducibility.md` - code-level reproducibility and artifact hygiene cleanup.
 
 Key Phase 7 tables:
 

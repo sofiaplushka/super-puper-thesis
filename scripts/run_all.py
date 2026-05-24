@@ -20,28 +20,55 @@ def exists_all(paths: list[str]) -> bool:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--skip-existing", action="store_true")
-    parser.add_argument("--skip-embeddings", action="store_true")
+    parser.add_argument(
+        "--skip-existing",
+        action="store_true",
+        help="Skip steps whose expected output files already exist.",
+    )
+    parser.add_argument(
+        "--skip-embeddings",
+        action="store_true",
+        help="Skip BGE-M3 embedding generation.",
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Run every step regardless of existing outputs.",
+    )
     args = parser.parse_args()
 
     py = sys.executable
+    skip_existing = args.skip_existing and not args.force
     run(
         [py, "scripts/01_build_tagged_dataset.py"],
-        skip=args.skip_existing and Path("data/processed/anekdots_tagged.csv").exists(),
+        skip=skip_existing and Path("data/processed/anekdots_tagged.csv").exists(),
     )
+    embedding_cmd = [py, "scripts/02_compute_embeddings.py", "--mode", "local"]
+    if not args.force:
+        embedding_cmd.append("--skip-existing")
     run(
-        [py, "scripts/02_compute_embeddings.py", "--mode", "local", "--skip-existing"],
-        skip=args.skip_embeddings or (args.skip_existing and exists_all(["data/embeddings/tagged_bge_m3.npy", "data/embeddings/tagged_pca128.npy"])),
+        embedding_cmd,
+        skip=args.skip_embeddings
+        or (
+            skip_existing
+            and exists_all(
+                [
+                    "data/embeddings/tagged_bge_m3.npy",
+                    "data/embeddings/tagged_pca128.npy",
+                ]
+            )
+        ),
     )
     run(
         [py, "scripts/03_cluster_and_visualize.py"],
-        skip=args.skip_existing and Path("data/processed/anekdots_tagged_clustered.csv").exists(),
+        skip=skip_existing
+        and Path("data/processed/anekdots_tagged_clustered.csv").exists(),
     )
     run([py, "scripts/04_validate_clusters_with_tags.py"])
     run([py, "scripts/05_analyze_practical_weaknesses.py"])
     run(
         [py, "scripts/06_remap_macro_tags.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/top_macro_tags_before_after.csv",
@@ -52,7 +79,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/07_compute_exact_metrics.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/metrics_all.csv",
@@ -63,7 +90,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/08_feature_ablation_and_search.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/feature_ablation_metrics.csv",
@@ -74,7 +101,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/09_select_final_and_interpret.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/final_clustering_selection.csv",
@@ -88,7 +115,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/12_macro_tag_mapping_audit.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/macro_tag_mapping_audit.csv",
@@ -98,12 +125,12 @@ def main() -> int:
     )
     run(
         [py, "scripts/10_build_execution_summary_notebook.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb").exists(),
     )
     run(
         [py, "scripts/13_hierarchical_evaluation.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/hierarchical_metrics_summary.csv",
@@ -113,7 +140,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/14_supervised_tag_prediction_baseline.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/supervised_tag_prediction_baseline.csv",
@@ -123,7 +150,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/15_semi_supervised_upper_bound.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "data/embeddings/tagged_bge_m3_finetuned.npy",
@@ -135,7 +162,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/16_final_evaluation_story.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "outputs/tables/final_evaluation_story.csv",
@@ -145,7 +172,7 @@ def main() -> int:
     )
     run(
         [py, "scripts/17_build_supervisor_notebook.py"],
-        skip=args.skip_existing
+        skip=skip_existing
         and exists_all(
             [
                 "notebooks/Sophie_анеки_кластеризация_итоговая.ipynb",

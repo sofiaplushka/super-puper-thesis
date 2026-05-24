@@ -11,4 +11,3 @@ def test_text_hash_is_case_insensitive():
 
 def test_count_words_handles_cyrillic():
     assert count_words("раз два, три") == 3
-

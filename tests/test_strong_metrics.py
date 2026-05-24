@@ -38,5 +38,10 @@ def test_metric_suite_reports_expected_subsets():
 
     assert set(metrics["subset"]) == {"all", "excluding_other", "single_clear_label"}
     assert int(metrics.loc[metrics["subset"].eq("all"), "rows"].iloc[0]) == 4
-    assert int(metrics.loc[metrics["subset"].eq("excluding_other"), "rows"].iloc[0]) == 3
-    assert int(metrics.loc[metrics["subset"].eq("single_clear_label"), "rows"].iloc[0]) == 2
+    assert (
+        int(metrics.loc[metrics["subset"].eq("excluding_other"), "rows"].iloc[0]) == 3
+    )
+    assert (
+        int(metrics.loc[metrics["subset"].eq("single_clear_label"), "rows"].iloc[0])
+        == 2
+    )

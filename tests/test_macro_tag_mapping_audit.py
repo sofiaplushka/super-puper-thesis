@@ -26,6 +26,8 @@ def test_macro_tag_mapping_audit_statuses_and_other_bucket_are_explicit():
     assert not audit["audit_rationale"].isna().any()
     assert not audit["example_joke_ids"].isna().any()
     assert int(audit["mapped_macro_tag"].eq("other").sum()) == 0
-    note = Path("outputs/report_notes/12_macro_tag_mapping_audit.md").read_text(encoding="utf-8")
+    note = Path("outputs/report_notes/12_macro_tag_mapping_audit.md").read_text(
+        encoding="utf-8"
+    )
     assert "exhaustive at the raw-tag level" in note
     assert "No individual joke rows were manually relabeled" in note

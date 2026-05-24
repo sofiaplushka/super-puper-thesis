@@ -26,7 +26,9 @@ def test_report_update_guide_separates_baseline_and_final_results():
 def test_execution_report_and_readme_reference_final_pipeline():
     execution_report = Path("docs/execution_report.md").read_text(encoding="utf-8")
     readme = Path("README.md").read_text(encoding="utf-8")
-    assert "notebooks/tagged_corpus_analysis_execution_summary.ipynb" in execution_report
+    assert (
+        "notebooks/tagged_corpus_analysis_execution_summary.ipynb" in execution_report
+    )
     assert "tagged_corpus_analysis_executed_colab.ipynb" not in execution_report
     assert "final_internal_cluster_metrics.csv" in execution_report
     for script_name in [

@@ -10,15 +10,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
+from sklearn.metrics import (
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 from sklearn.preprocessing import normalize
-
 
 SEARCH_MODULE_PATH = Path(__file__).with_name("08_feature_ablation_and_search.py")
 
 
 def load_search_module():
-    spec = importlib.util.spec_from_file_location("strong_search_module", SEARCH_MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "strong_search_module", SEARCH_MODULE_PATH
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Cannot load {SEARCH_MODULE_PATH}")
     module = importlib.util.module_from_spec(spec)
@@ -37,12 +42,24 @@ def parse_params(text: object) -> dict[str, str]:
 
 def load_existing_features() -> dict[str, np.ndarray]:
     features = {
-        "dense_bge_pca": normalize(np.load("data/features/dense_bge_pca.npy"), norm="l2").astype("float32", copy=False),
-        "tfidf_word_svd": normalize(np.load("data/features/tfidf_word_svd.npy"), norm="l2").astype("float32", copy=False),
-        "tfidf_char_svd": normalize(np.load("data/features/tfidf_char_svd.npy"), norm="l2").astype("float32", copy=False),
-        "structural_features": normalize(np.load("data/features/structural_features.npy"), norm="l2").astype("float32", copy=False),
-        "hybrid_dense_lexical": normalize(np.load("data/features/hybrid_dense_lexical.npy"), norm="l2").astype("float32", copy=False),
-        "hybrid_dense_lexical_structural": normalize(np.load("data/features/hybrid_dense_lexical_structural.npy"), norm="l2").astype("float32", copy=False),
+        "dense_bge_pca": normalize(
+            np.load("data/features/dense_bge_pca.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "tfidf_word_svd": normalize(
+            np.load("data/features/tfidf_word_svd.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "tfidf_char_svd": normalize(
+            np.load("data/features/tfidf_char_svd.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "structural_features": normalize(
+            np.load("data/features/structural_features.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "hybrid_dense_lexical": normalize(
+            np.load("data/features/hybrid_dense_lexical.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "hybrid_dense_lexical_structural": normalize(
+            np.load("data/features/hybrid_dense_lexical_structural.npy"), norm="l2"
+        ).astype("float32", copy=False),
     }
     features["_lexical"] = normalize(
         np.hstack([features["tfidf_word_svd"], features["tfidf_char_svd"]]),
@@ -53,11 +70,22 @@ def load_existing_features() -> dict[str, np.ndarray]:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
-    parser.add_argument("--selection", default="outputs/tables/final_clustering_selection.csv")
-    parser.add_argument("--output", default="outputs/tables/final_internal_cluster_metrics.csv")
-    parser.add_argument("--legacy-output", default="outputs/tables/internal_cluster_metrics.csv")
-    parser.add_argument("--archive-initial", default="outputs/tables/internal_cluster_metrics_initial_leiden.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
+    parser.add_argument(
+        "--selection", default="outputs/tables/final_clustering_selection.csv"
+    )
+    parser.add_argument(
+        "--output", default="outputs/tables/final_internal_cluster_metrics.csv"
+    )
+    parser.add_argument(
+        "--legacy-output", default="outputs/tables/internal_cluster_metrics.csv"
+    )
+    parser.add_argument(
+        "--archive-initial",
+        default="outputs/tables/internal_cluster_metrics_initial_leiden.csv",
+    )
     args = parser.parse_args()
 
     output = Path(args.output)
@@ -82,14 +110,26 @@ def main() -> int:
 
     cluster_count = int(pd.Series(labels).nunique())
     largest_cluster_share = float(pd.Series(labels).value_counts(normalize=True).max())
-    silhouette = float(silhouette_score(features, labels, metric="cosine")) if cluster_count > 1 else np.nan
-    calinski = float(calinski_harabasz_score(features, labels)) if cluster_count > 1 else np.nan
-    davies = float(davies_bouldin_score(features, labels)) if cluster_count > 1 else np.nan
+    silhouette = (
+        float(silhouette_score(features, labels, metric="cosine"))
+        if cluster_count > 1
+        else np.nan
+    )
+    calinski = (
+        float(calinski_harabasz_score(features, labels))
+        if cluster_count > 1
+        else np.nan
+    )
+    davies = (
+        float(davies_bouldin_score(features, labels)) if cluster_count > 1 else np.nan
+    )
     modularity: float | str
     modularity_note = ""
     try:
         graph = search_module.build_leiden_graph(features, k, "cosine")
-        modularity = float(graph.modularity(labels.tolist(), weights=graph.es["weight"]))
+        modularity = float(
+            graph.modularity(labels.tolist(), weights=graph.es["weight"])
+        )
     except Exception as exc:
         modularity = "not_recomputed"
         modularity_note = f"{type(exc).__name__}: {exc}"
@@ -113,8 +153,8 @@ def main() -> int:
         "feature_space": "hybrid BGE/PCA + lexical TF-IDF/SVD",
     }
     result = pd.DataFrame([row])
-    result.to_csv(output, index=False, encoding="utf-8")
-    result.to_csv(legacy_output, index=False, encoding="utf-8")
+    result.to_csv(output, index=False, encoding="utf-8", lineterminator="\n")
+    result.to_csv(legacy_output, index=False, encoding="utf-8", lineterminator="\n")
     print(row)
     return 0
 

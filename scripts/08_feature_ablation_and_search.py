@@ -38,15 +38,28 @@ def structural_matrix(df: pd.DataFrame) -> np.ndarray:
             "question_count": text.map(lambda x: x.count("?")),
             "exclamation_count": text.map(lambda x: x.count("!")),
             "comma_count": text.map(lambda x: x.count(",")),
-            "quote_count": text.map(lambda x: x.count('"') + x.count("«") + x.count("»")),
-            "dialogue_marker": text.map(lambda x: int((x.count("-") + x.count("—")) >= 2)),
-            "uppercase_ratio": text.map(lambda x: sum(1 for c in x if c.isupper()) / max(1, sum(1 for c in x if c.isalpha()))),
+            "quote_count": text.map(
+                lambda x: x.count('"') + x.count("«") + x.count("»")
+            ),
+            "dialogue_marker": text.map(
+                lambda x: int((x.count("-") + x.count("—")) >= 2)
+            ),
+            "uppercase_ratio": text.map(
+                lambda x: sum(1 for c in x if c.isupper())
+                / max(1, sum(1 for c in x if c.isalpha()))
+            ),
         }
     )
     return normalize(StandardScaler().fit_transform(mat), norm="l2")
 
 
-def svd_tfidf(texts: list[str], analyzer: str, ngram_range: tuple[int, int], max_features: int, seed: int) -> np.ndarray:
+def svd_tfidf(
+    texts: list[str],
+    analyzer: str,
+    ngram_range: tuple[int, int],
+    max_features: int,
+    seed: int,
+) -> np.ndarray:
     vectorizer = TfidfVectorizer(
         analyzer=analyzer,
         ngram_range=ngram_range,
@@ -58,25 +71,40 @@ def svd_tfidf(texts: list[str], analyzer: str, ngram_range: tuple[int, int], max
     )
     matrix = vectorizer.fit_transform(texts)
     n_components = min(128, max(2, matrix.shape[1] - 1))
-    values = TruncatedSVD(n_components=n_components, random_state=seed).fit_transform(matrix)
+    values = TruncatedSVD(n_components=n_components, random_state=seed).fit_transform(
+        matrix
+    )
     return normalize(values, norm="l2").astype("float32", copy=False)
 
 
 def save_features(df: pd.DataFrame, seed: int) -> dict[str, np.ndarray]:
     Path("data/features").mkdir(parents=True, exist_ok=True)
-    texts = df["text_clean" if "text_clean" in df.columns else "text"].fillna("").astype(str).tolist()
-    dense = normalize(np.load("data/embeddings/tagged_pca128.npy"), norm="l2").astype("float32", copy=False)
+    texts = (
+        df["text_clean" if "text_clean" in df.columns else "text"]
+        .fillna("")
+        .astype(str)
+        .tolist()
+    )
+    dense = normalize(np.load("data/embeddings/tagged_pca128.npy"), norm="l2").astype(
+        "float32", copy=False
+    )
     word = svd_tfidf(texts, "word", (1, 2), 12000, seed)
     char = svd_tfidf(texts, "char_wb", (3, 5), 16000, seed)
     structural = structural_matrix(df).astype("float32", copy=False)
-    lexical = normalize(np.hstack([word, char]), norm="l2").astype("float32", copy=False)
-    hybrid = normalize(np.hstack([dense, lexical * 0.75, structural * 0.25]), norm="l2").astype("float32", copy=False)
+    lexical = normalize(np.hstack([word, char]), norm="l2").astype(
+        "float32", copy=False
+    )
+    hybrid = normalize(
+        np.hstack([dense, lexical * 0.75, structural * 0.25]), norm="l2"
+    ).astype("float32", copy=False)
     features = {
         "dense_bge_pca": dense,
         "tfidf_word_svd": word,
         "tfidf_char_svd": char,
         "structural_features": structural,
-        "hybrid_dense_lexical": normalize(np.hstack([dense, lexical]), norm="l2").astype("float32", copy=False),
+        "hybrid_dense_lexical": normalize(
+            np.hstack([dense, lexical]), norm="l2"
+        ).astype("float32", copy=False),
         "hybrid_dense_lexical_structural": hybrid,
     }
     for name, values in features.items():
@@ -97,13 +125,15 @@ def balanced_score(row: dict[str, object]) -> float:
     if cluster_count < 6 or cluster_count > 30:
         score -= 0.15
     if largest > 0.40:
-        score -= (largest - 0.40)
+        score -= largest - 0.40
     if noise > 0.25:
-        score -= (noise - 0.25)
+        score -= noise - 0.25
     return float(score)
 
 
-def evaluate_labels(df: pd.DataFrame, labels: Iterable[object], run: dict[str, object]) -> dict[str, object]:
+def evaluate_labels(
+    df: pd.DataFrame, labels: Iterable[object], run: dict[str, object]
+) -> dict[str, object]:
     labels_arr = np.asarray(list(labels))
     all_row = metric_row(df, labels_arr, "all")
     excl_row = metric_row(df, labels_arr, "excluding_other")
@@ -115,7 +145,11 @@ def evaluate_labels(df: pd.DataFrame, labels: Iterable[object], run: dict[str, o
             "rows": len(df),
             "cluster_count": int(len(set(labels_arr))),
             "largest_cluster_share": float(counts.max()),
-            "noise_share": float((labels_arr == -1).mean()) if np.issubdtype(labels_arr.dtype, np.number) else 0.0,
+            "noise_share": (
+                float((labels_arr == -1).mean())
+                if np.issubdtype(labels_arr.dtype, np.number)
+                else 0.0
+            ),
             "ari_all": all_row["ari"],
             "ami_all": all_row["ami"],
             "v_measure_all": all_row["v_measure"],
@@ -134,30 +168,75 @@ def evaluate_labels(df: pd.DataFrame, labels: Iterable[object], run: dict[str, o
     return row
 
 
-def quick_feature_ablation(df: pd.DataFrame, features: dict[str, np.ndarray], seed: int) -> pd.DataFrame:
+def quick_feature_ablation(
+    df: pd.DataFrame, features: dict[str, np.ndarray], seed: int
+) -> pd.DataFrame:
     rows = []
     base_names = [k for k in features if not k.startswith("_")]
     for name in base_names:
-        labels = MiniBatchKMeans(n_clusters=12, random_state=seed, n_init=10, batch_size=512).fit_predict(features[name])
-        rows.append(evaluate_labels(df, labels, {"feature_set": name, "method": "minibatch_kmeans_ablation", "params": "n_clusters=12"}))
+        labels = MiniBatchKMeans(
+            n_clusters=12, random_state=seed, n_init=10, batch_size=512
+        ).fit_predict(features[name])
+        rows.append(
+            evaluate_labels(
+                df,
+                labels,
+                {
+                    "feature_set": name,
+                    "method": "minibatch_kmeans_ablation",
+                    "params": "n_clusters=12",
+                },
+            )
+        )
     dense = features["dense_bge_pca"]
     lexical = features["_lexical"]
     structural = features["structural_features"]
     for dw in [0.5, 0.75, 1.0, 1.25]:
         for lw in [0.25, 0.5, 0.75, 1.0, 1.25]:
             values = normalize(np.hstack([dense * dw, lexical * lw]), norm="l2")
-            labels = MiniBatchKMeans(n_clusters=12, random_state=seed, n_init=5, batch_size=512).fit_predict(values)
+            labels = MiniBatchKMeans(
+                n_clusters=12, random_state=seed, n_init=5, batch_size=512
+            ).fit_predict(values)
             name = f"hybrid_dense_lexical_dw{dw}_lw{lw}"
-            rows.append(evaluate_labels(df, labels, {"feature_set": name, "method": "minibatch_kmeans_ablation", "params": f"dense={dw};lexical={lw}"}))
+            rows.append(
+                evaluate_labels(
+                    df,
+                    labels,
+                    {
+                        "feature_set": name,
+                        "method": "minibatch_kmeans_ablation",
+                        "params": f"dense={dw};lexical={lw}",
+                    },
+                )
+            )
             for sw in [0.0, 0.1, 0.25, 0.5]:
                 if sw == 0.0:
                     continue
-                values_s = normalize(np.hstack([dense * dw, lexical * lw, structural * sw]), norm="l2")
-                labels_s = MiniBatchKMeans(n_clusters=12, random_state=seed, n_init=5, batch_size=512).fit_predict(values_s)
+                values_s = normalize(
+                    np.hstack([dense * dw, lexical * lw, structural * sw]), norm="l2"
+                )
+                labels_s = MiniBatchKMeans(
+                    n_clusters=12, random_state=seed, n_init=5, batch_size=512
+                ).fit_predict(values_s)
                 name_s = f"hybrid_dense_lexical_structural_dw{dw}_lw{lw}_sw{sw}"
-                rows.append(evaluate_labels(df, labels_s, {"feature_set": name_s, "method": "minibatch_kmeans_ablation", "params": f"dense={dw};lexical={lw};structural={sw}"}))
+                rows.append(
+                    evaluate_labels(
+                        df,
+                        labels_s,
+                        {
+                            "feature_set": name_s,
+                            "method": "minibatch_kmeans_ablation",
+                            "params": f"dense={dw};lexical={lw};structural={sw}",
+                        },
+                    )
+                )
     result = pd.DataFrame(rows).sort_values("balanced_score", ascending=False)
-    result.to_csv("outputs/tables/feature_ablation_metrics.csv", index=False, encoding="utf-8")
+    result.to_csv(
+        "outputs/tables/feature_ablation_metrics.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     return result
 
 
@@ -174,8 +253,12 @@ def feature_by_name(name: str, features: dict[str, np.ndarray]) -> np.ndarray:
     sw_match = re.search(r"sw([0-9.]+)", name)
     if sw_match:
         sw = float(sw_match.group(1))
-        return normalize(np.hstack([dense * dw, lexical * lw, structural * sw]), norm="l2").astype("float32", copy=False)
-    return normalize(np.hstack([dense * dw, lexical * lw]), norm="l2").astype("float32", copy=False)
+        return normalize(
+            np.hstack([dense * dw, lexical * lw, structural * sw]), norm="l2"
+        ).astype("float32", copy=False)
+    return normalize(np.hstack([dense * dw, lexical * lw]), norm="l2").astype(
+        "float32", copy=False
+    )
 
 
 def build_leiden_graph(values: np.ndarray, k: int, metric: str):
@@ -214,20 +297,33 @@ def leiden_labels_from_graph(graph, resolution: float, seed: int) -> np.ndarray:
     return np.asarray(part.membership)
 
 
-def leiden_labels(values: np.ndarray, k: int, resolution: float, seed: int, metric: str) -> np.ndarray:
-    return leiden_labels_from_graph(build_leiden_graph(values, k, metric), resolution, seed)
+def leiden_labels(
+    values: np.ndarray, k: int, resolution: float, seed: int, metric: str
+) -> np.ndarray:
+    return leiden_labels_from_graph(
+        build_leiden_graph(values, k, metric), resolution, seed
+    )
 
 
-def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: pd.DataFrame, seed: int) -> pd.DataFrame:
+def strong_search(
+    df: pd.DataFrame, features: dict[str, np.ndarray], ablation: pd.DataFrame, seed: int
+) -> pd.DataFrame:
     output_path = Path("outputs/tables/clustering_search_all_runs.csv")
     partial_path = Path("outputs/tables/clustering_search_partial.csv")
-    selected = list(dict.fromkeys(list(ablation["feature_set"].head(3)) + ["dense_bge_pca", "tfidf_word_svd", "tfidf_char_svd"]))
+    selected = list(
+        dict.fromkeys(
+            list(ablation["feature_set"].head(3))
+            + ["dense_bge_pca", "tfidf_word_svd", "tfidf_char_svd"]
+        )
+    )
     hdbscan_selected = set(selected[:2] + ["dense_bge_pca"])
     rows = []
 
     def flush() -> None:
         if rows:
-            pd.DataFrame(rows).sort_values("balanced_score", ascending=False).to_csv(partial_path, index=False, encoding="utf-8")
+            pd.DataFrame(rows).sort_values("balanced_score", ascending=False).to_csv(
+                partial_path, index=False, encoding="utf-8", lineterminator="\n"
+            )
 
     def add_row(row: dict[str, object]) -> None:
         rows.append(row)
@@ -241,7 +337,15 @@ def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: p
                 graph = build_leiden_graph(values, k, "cosine")
             except Exception as exc:
                 graph = None
-                add_row({"feature_set": name, "method": "leiden", "params": f"k={k};graph_build", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+                add_row(
+                    {
+                        "feature_set": name,
+                        "method": "leiden",
+                        "params": f"k={k};graph_build",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "balanced_score": -999,
+                    }
+                )
             for resolution in [0.35, 0.5, 0.65, 0.8, 1.0, 1.2, 1.5, 2.0, 2.5]:
                 for run_seed in [1, 7, 42]:
                     try:
@@ -264,16 +368,58 @@ def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: p
                             )
                         )
                     except Exception as exc:
-                        add_row({"feature_set": name, "method": "leiden", "params": f"k={k};resolution={resolution};seed={run_seed}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+                        add_row(
+                            {
+                                "feature_set": name,
+                                "method": "leiden",
+                                "params": f"k={k};resolution={resolution};seed={run_seed}",
+                                "error": f"{type(exc).__name__}: {exc}",
+                                "balanced_score": -999,
+                            }
+                        )
         for n_clusters in [6, 8, 10, 12, 15, 18, 20, 25, 30]:
-            labels = KMeans(n_clusters=n_clusters, random_state=seed, n_init=10).fit_predict(values)
-            add_row(evaluate_labels(df, labels, {"feature_set": name, "method": "kmeans", "params": f"n_clusters={n_clusters}", "n_clusters": n_clusters}))
+            labels = KMeans(
+                n_clusters=n_clusters, random_state=seed, n_init=10
+            ).fit_predict(values)
+            add_row(
+                evaluate_labels(
+                    df,
+                    labels,
+                    {
+                        "feature_set": name,
+                        "method": "kmeans",
+                        "params": f"n_clusters={n_clusters}",
+                        "n_clusters": n_clusters,
+                    },
+                )
+            )
         for n_clusters in [8, 10, 12, 15, 20, 25]:
             try:
-                labels = AgglomerativeClustering(n_clusters=n_clusters, metric="cosine", linkage="average").fit_predict(values)
-                add_row(evaluate_labels(df, labels, {"feature_set": name, "method": "agglomerative", "metric": "cosine", "params": f"n_clusters={n_clusters};linkage=average"}))
+                labels = AgglomerativeClustering(
+                    n_clusters=n_clusters, metric="cosine", linkage="average"
+                ).fit_predict(values)
+                add_row(
+                    evaluate_labels(
+                        df,
+                        labels,
+                        {
+                            "feature_set": name,
+                            "method": "agglomerative",
+                            "metric": "cosine",
+                            "params": f"n_clusters={n_clusters};linkage=average",
+                        },
+                    )
+                )
             except Exception as exc:
-                add_row({"feature_set": name, "method": "agglomerative", "params": f"n_clusters={n_clusters}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+                add_row(
+                    {
+                        "feature_set": name,
+                        "method": "agglomerative",
+                        "params": f"n_clusters={n_clusters}",
+                        "error": f"{type(exc).__name__}: {exc}",
+                        "balanced_score": -999,
+                    }
+                )
         if name in hdbscan_selected:
             for min_cluster_size, min_samples, method in [
                 (30, 5, "eom"),
@@ -303,13 +449,36 @@ def strong_search(df: pd.DataFrame, features: dict[str, np.ndarray], ablation: p
                         )
                     )
                 except Exception as exc:
-                    add_row({"feature_set": name, "method": "hdbscan", "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}", "error": f"{type(exc).__name__}: {exc}", "balanced_score": -999})
+                    add_row(
+                        {
+                            "feature_set": name,
+                            "method": "hdbscan",
+                            "params": f"min_cluster_size={min_cluster_size};min_samples={min_samples};method={method}",
+                            "error": f"{type(exc).__name__}: {exc}",
+                            "balanced_score": -999,
+                        }
+                    )
         flush()
     result = pd.DataFrame(rows).sort_values("balanced_score", ascending=False)
-    result.to_csv(output_path, index=False, encoding="utf-8")
-    result[result["method"] == "leiden"].to_csv("outputs/tables/leiden_grid_search_ranked.csv", index=False, encoding="utf-8")
-    result[result["method"] != "leiden"].to_csv("outputs/tables/baseline_grid_search_ranked.csv", index=False, encoding="utf-8")
-    result.groupby("method", as_index=False).head(5).to_csv("outputs/tables/clustering_baselines_comparison.csv", index=False, encoding="utf-8")
+    result.to_csv(output_path, index=False, encoding="utf-8", lineterminator="\n")
+    result[result["method"] == "leiden"].to_csv(
+        "outputs/tables/leiden_grid_search_ranked.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    result[result["method"] != "leiden"].to_csv(
+        "outputs/tables/baseline_grid_search_ranked.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    result.groupby("method", as_index=False).head(5).to_csv(
+        "outputs/tables/clustering_baselines_comparison.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     if partial_path.exists():
         partial_path.unlink()
     return result
@@ -349,7 +518,9 @@ def write_reports(ablation: pd.DataFrame, search: pd.DataFrame) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
     Path("outputs/tables").mkdir(parents=True, exist_ok=True)
@@ -369,7 +540,21 @@ def main() -> int:
         f"V={search.iloc[0]['v_measure_excluding_other']:.3f}, F1={search.iloc[0]['pairwise_f1_all']:.3f}."
     )
     write_reports(ablation, search)
-    print(search.head(10)[["feature_set", "method", "params", "cluster_count", "largest_cluster_share", "ari_excluding_other", "v_measure_excluding_other", "pairwise_f1_all", "balanced_score"]].to_string(index=False))
+    print(
+        search.head(10)[
+            [
+                "feature_set",
+                "method",
+                "params",
+                "cluster_count",
+                "largest_cluster_share",
+                "ari_excluding_other",
+                "v_measure_excluding_other",
+                "pairwise_f1_all",
+                "balanced_score",
+            ]
+        ].to_string(index=False)
+    )
     return 0
 
 

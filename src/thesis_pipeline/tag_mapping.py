@@ -24,7 +24,9 @@ def macro_lookup(mapping: dict[str, list[str]]) -> dict[str, str]:
     return lookup
 
 
-def map_tags(tags: Iterable[str], mapping: dict[str, list[str]]) -> tuple[list[str], list[str]]:
+def map_tags(
+    tags: Iterable[str], mapping: dict[str, list[str]]
+) -> tuple[list[str], list[str]]:
     lookup = macro_lookup(mapping)
     macros: list[str] = []
     unmapped: list[str] = []
@@ -62,4 +64,3 @@ def parse_json_list(value: object) -> list[str]:
     if isinstance(raw, list):
         return [str(v) for v in raw]
     return [str(raw)]
-

@@ -39,4 +39,3 @@ def truncate_text(text: str | None, max_chars: int = 300) -> str:
     if len(value) <= max_chars:
         return value
     return value[: max_chars - 1].rstrip() + "…"
-

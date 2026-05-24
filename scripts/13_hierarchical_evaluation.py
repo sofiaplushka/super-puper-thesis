@@ -24,7 +24,9 @@ def load_hierarchy(path: str | Path) -> tuple[dict[str, list[str]], dict[str, st
         level1_to_level2[str(level1)] = tags
         for tag in tags:
             if tag in level2_to_level1:
-                raise ValueError(f"Macro tag {tag!r} appears in more than one level-1 category")
+                raise ValueError(
+                    f"Macro tag {tag!r} appears in more than one level-1 category"
+                )
             level2_to_level1[tag] = str(level1)
     return level1_to_level2, level2_to_level1
 
@@ -90,7 +92,9 @@ def write_note(summary: pd.DataFrame, output: str | Path) -> None:
     l2 = rows[("level_2_detailed", "all")]
     l1_single = rows[("level_1_broad", "single_clear_label")]
     l2_single = rows[("level_2_detailed", "single_clear_label")]
-    level1_higher = l1["v_measure"] > l2["v_measure"] and l1["pairwise_f1"] > l2["pairwise_f1"]
+    level1_higher = (
+        l1["v_measure"] > l2["v_measure"] and l1["pairwise_f1"] > l2["pairwise_f1"]
+    )
     observed_note = (
         "In this run the broad level-1 metrics are higher than the level-2 metrics."
         if level1_higher
@@ -133,10 +137,16 @@ current cluster structure.
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--hierarchy", default="config/macro_tag_hierarchy.yml")
-    parser.add_argument("--output", default="outputs/tables/hierarchical_metrics_summary.csv")
-    parser.add_argument("--note", default="outputs/report_notes/13_hierarchical_evaluation.md")
+    parser.add_argument(
+        "--output", default="outputs/tables/hierarchical_metrics_summary.csv"
+    )
+    parser.add_argument(
+        "--note", default="outputs/report_notes/13_hierarchical_evaluation.md"
+    )
     args = parser.parse_args()
 
     df = pd.read_csv(args.clustered)
@@ -148,14 +158,27 @@ def main() -> int:
     rows = []
     for name, tag_sets in [("level_1_broad", level1), ("level_2_detailed", level2)]:
         rows.append(metric_row(labels, tag_sets, name, "all"))
-        rows.append(metric_row(labels, tag_sets, name, "single_clear_label", single_clear_mask(tag_sets)))
+        rows.append(
+            metric_row(
+                labels,
+                tag_sets,
+                name,
+                "single_clear_label",
+                single_clear_mask(tag_sets),
+            )
+        )
     summary = pd.DataFrame(rows)
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    summary.to_csv(args.output, index=False, encoding="utf-8")
+    summary.to_csv(args.output, index=False, encoding="utf-8", lineterminator="\n")
 
     enriched = df[["id", "macro_tags"]].copy()
     enriched["level_1_tags"] = [json_list(sorted(tags)) for tags in level1]
-    enriched.to_csv("outputs/tables/hierarchical_tag_assignments.csv", index=False, encoding="utf-8")
+    enriched.to_csv(
+        "outputs/tables/hierarchical_tag_assignments.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     write_note(summary, args.note)
     return 0
 

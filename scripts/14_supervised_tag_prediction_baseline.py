@@ -23,7 +23,9 @@ def multilabel_sets(series: pd.Series) -> list[list[str]]:
     return [sorted(set(parse_json_list(value))) for value in series]
 
 
-def split_indices(df: pd.DataFrame, seed: int) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+def split_indices(
+    df: pd.DataFrame, seed: int
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     idx = np.arange(len(df))
     stratify = df["primary_macro_tag"].astype(str)
     try:
@@ -41,7 +43,9 @@ def split_indices(df: pd.DataFrame, seed: int) -> tuple[np.ndarray, np.ndarray, 
         )
     except ValueError:
         train_idx, temp_idx = train_test_split(idx, test_size=0.30, random_state=seed)
-        val_idx, test_idx = train_test_split(temp_idx, test_size=0.50, random_state=seed)
+        val_idx, test_idx = train_test_split(
+            temp_idx, test_size=0.50, random_state=seed
+        )
     return np.asarray(train_idx), np.asarray(val_idx), np.asarray(test_idx)
 
 
@@ -57,14 +61,30 @@ def evaluate(y_true: np.ndarray, y_pred: np.ndarray) -> dict[str, float]:
     return {
         "macro_f1": float(f1_score(y_true, y_pred, average="macro", zero_division=0)),
         "micro_f1": float(f1_score(y_true, y_pred, average="micro", zero_division=0)),
-        "weighted_f1": float(f1_score(y_true, y_pred, average="weighted", zero_division=0)),
-        "samples_f1": float(f1_score(y_true, y_pred, average="samples", zero_division=0)),
-        "macro_precision": float(precision_score(y_true, y_pred, average="macro", zero_division=0)),
-        "micro_precision": float(precision_score(y_true, y_pred, average="micro", zero_division=0)),
-        "weighted_precision": float(precision_score(y_true, y_pred, average="weighted", zero_division=0)),
-        "macro_recall": float(recall_score(y_true, y_pred, average="macro", zero_division=0)),
-        "micro_recall": float(recall_score(y_true, y_pred, average="micro", zero_division=0)),
-        "weighted_recall": float(recall_score(y_true, y_pred, average="weighted", zero_division=0)),
+        "weighted_f1": float(
+            f1_score(y_true, y_pred, average="weighted", zero_division=0)
+        ),
+        "samples_f1": float(
+            f1_score(y_true, y_pred, average="samples", zero_division=0)
+        ),
+        "macro_precision": float(
+            precision_score(y_true, y_pred, average="macro", zero_division=0)
+        ),
+        "micro_precision": float(
+            precision_score(y_true, y_pred, average="micro", zero_division=0)
+        ),
+        "weighted_precision": float(
+            precision_score(y_true, y_pred, average="weighted", zero_division=0)
+        ),
+        "macro_recall": float(
+            recall_score(y_true, y_pred, average="macro", zero_division=0)
+        ),
+        "micro_recall": float(
+            recall_score(y_true, y_pred, average="micro", zero_division=0)
+        ),
+        "weighted_recall": float(
+            recall_score(y_true, y_pred, average="weighted", zero_division=0)
+        ),
         "subset_accuracy": float(accuracy_score(y_true, y_pred)),
     }
 
@@ -157,13 +177,22 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="data/processed/anekdots_tagged.csv")
     parser.add_argument("--pca", default="data/embeddings/tagged_pca128.npy")
-    parser.add_argument("--output", default="outputs/tables/supervised_tag_prediction_baseline.csv")
-    parser.add_argument("--note", default="outputs/report_notes/14_supervised_tag_prediction_baseline.md")
+    parser.add_argument(
+        "--output", default="outputs/tables/supervised_tag_prediction_baseline.csv"
+    )
+    parser.add_argument(
+        "--note",
+        default="outputs/report_notes/14_supervised_tag_prediction_baseline.md",
+    )
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
 
     df = pd.read_csv(args.dataset)
-    texts = df["text_clean" if "text_clean" in df.columns else "text"].fillna("").astype(str)
+    texts = (
+        df["text_clean" if "text_clean" in df.columns else "text"]
+        .fillna("")
+        .astype(str)
+    )
     labels = multilabel_sets(df["macro_tags"])
     mlb = MultiLabelBinarizer()
     y = mlb.fit_transform(labels)
@@ -200,9 +229,15 @@ def main() -> int:
     feature_sets = {
         "tfidf_word_1_2": (word_train, word_val, word_test),
         "tfidf_char_wb_3_5": (char_train, char_val, char_test),
-        "bge_pca128": (dense_sparse[train_idx], dense_sparse[val_idx], dense_sparse[test_idx]),
+        "bge_pca128": (
+            dense_sparse[train_idx],
+            dense_sparse[val_idx],
+            dense_sparse[test_idx],
+        ),
         "hybrid_word_char_bge_pca": (
-            sparse.hstack([word_train, char_train, dense_sparse[train_idx]], format="csr"),
+            sparse.hstack(
+                [word_train, char_train, dense_sparse[train_idx]], format="csr"
+            ),
             sparse.hstack([word_val, char_val, dense_sparse[val_idx]], format="csr"),
             sparse.hstack([word_test, char_test, dense_sparse[test_idx]], format="csr"),
         ),
@@ -225,9 +260,11 @@ def main() -> int:
                 len(test_idx),
             )
         )
-    result = pd.DataFrame(rows).sort_values(["split", "micro_f1"], ascending=[True, False])
+    result = pd.DataFrame(rows).sort_values(
+        ["split", "micro_f1"], ascending=[True, False]
+    )
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
-    result.to_csv(args.output, index=False, encoding="utf-8")
+    result.to_csv(args.output, index=False, encoding="utf-8", lineterminator="\n")
     write_note(result, args.note)
     return 0
 

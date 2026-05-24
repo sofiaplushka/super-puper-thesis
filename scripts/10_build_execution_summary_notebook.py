@@ -24,8 +24,7 @@ def build_notebook() -> nbformat.NotebookNode:
                 ]
             )
         ),
-        code_cell(
-            """
+        code_cell("""
 import importlib.util
 import platform
 import subprocess
@@ -46,10 +45,8 @@ try:
     print("Git commit:", subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip())
 except Exception as exc:
     print("Git commit: unavailable", type(exc).__name__, exc)
-            """
-        ),
-        code_cell(
-            """
+            """),
+        code_cell("""
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -77,10 +74,8 @@ print("PCA shape:", pca.shape)
 print("Final metrics rows:", len(final_metrics))
 print("Before/after rows:", len(before_after))
 print("Selection rows:", len(selection))
-            """
-        ),
-        code_cell(
-            """
+            """),
+        code_cell("""
 selected = selection.iloc[0]
 cluster_count = int(clustered["cluster_final"].nunique())
 largest_cluster_share = float(clustered["cluster_final"].value_counts(normalize=True).max())
@@ -90,10 +85,8 @@ print("Final feature set:", selected["feature_set"])
 print("Final params:", selected["params"])
 print("Final cluster count:", cluster_count)
 print("Largest cluster share:", round(largest_cluster_share, 6))
-            """
-        ),
-        code_cell(
-            """
+            """),
+        code_cell("""
 final_all = final_metrics[(final_metrics["model"] == "final") & (final_metrics["subset"] == "all")].iloc[0]
 single = final_metrics[(final_metrics["model"] == "final") & (final_metrics["subset"] == "single_clear_label")].iloc[0]
 
@@ -106,10 +99,8 @@ print("Final pairwise F1:", round(float(final_all["pairwise_f1"]), 6))
 print("Single-clear-label V-measure:", round(float(single["v_measure"]), 6))
 print("Single-clear-label pairwise F1:", round(float(single["pairwise_f1"]), 6))
 print(before_after[["metric", "old_leiden", "final", "delta"]].to_string(index=False))
-            """
-        ),
-        code_cell(
-            """
+            """),
+        code_cell("""
 generated_report_artifacts = [
     "outputs/tables/final_clustering_selection.csv",
     "outputs/tables/final_metrics_summary.csv",
@@ -130,24 +121,36 @@ generated_report_artifacts = [
 for artifact in generated_report_artifacts:
     path = Path(artifact)
     print(artifact, "exists=", path.exists(), "bytes=", path.stat().st_size if path.exists() else 0)
-            """
-        ),
+            """),
     ]
-    nb.metadata["kernelspec"] = {"display_name": "Python 3", "language": "python", "name": "python3"}
+    nb.metadata["kernelspec"] = {
+        "display_name": "Python 3",
+        "language": "python",
+        "name": "python3",
+    }
     nb.metadata["language_info"] = {"name": "python", "pygments_lexer": "ipython3"}
-    nb.metadata["execution_note"] = "Executed locally with nbclient; no Colab/GPU values are fabricated."
+    nb.metadata["execution_note"] = (
+        "Executed locally with nbclient; no Colab/GPU values are fabricated."
+    )
     return nb
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--output", default="notebooks/tagged_corpus_analysis_execution_summary.ipynb")
+    parser.add_argument(
+        "--output", default="notebooks/tagged_corpus_analysis_execution_summary.ipynb"
+    )
     parser.add_argument("--timeout", type=int, default=900)
     args = parser.parse_args()
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
     nb = build_notebook()
-    client = NotebookClient(nb, timeout=args.timeout, kernel_name="python3", resources={"metadata": {"path": "."}})
+    client = NotebookClient(
+        nb,
+        timeout=args.timeout,
+        kernel_name="python3",
+        resources={"metadata": {"path": "."}},
+    )
     client.execute()
     _, nb = nbformat.validator.normalize(nb)
     nbformat.write(nb, output)

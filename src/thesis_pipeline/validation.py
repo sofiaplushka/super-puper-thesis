@@ -34,19 +34,31 @@ def tag_distribution(df: pd.DataFrame, column: str, label_name: str) -> pd.DataF
     exploded = explode_counts(df, column, label_name)
     if exploded.empty:
         return pd.DataFrame(columns=[label_name, "count", "share"])
-    counts = exploded[label_name].value_counts().rename_axis(label_name).reset_index(name="count")
+    counts = (
+        exploded[label_name]
+        .value_counts()
+        .rename_axis(label_name)
+        .reset_index(name="count")
+    )
     counts["share"] = counts["count"] / len(df)
     return counts
 
 
 def tag_count_distribution(df: pd.DataFrame) -> pd.DataFrame:
     out = df[["tag_count", "macro_tag_count"]].copy()
-    return out.value_counts().rename("rows").reset_index().sort_values(["tag_count", "macro_tag_count"])
+    return (
+        out.value_counts()
+        .rename("rows")
+        .reset_index()
+        .sort_values(["tag_count", "macro_tag_count"])
+    )
 
 
 def cluster_tag_matrix(df: pd.DataFrame, tag_column: str) -> pd.DataFrame:
     clusters = sorted(df["cluster_leiden"].unique())
-    tags = sorted({tag for values in df[tag_column].map(parse_json_list) for tag in values})
+    tags = sorted(
+        {tag for values in df[tag_column].map(parse_json_list) for tag in values}
+    )
     matrix = pd.DataFrame(0, index=clusters, columns=tags)
     for _, row in df.iterrows():
         for tag in parse_json_list(row[tag_column]):
@@ -62,7 +74,14 @@ def purity_entropy(matrix: pd.DataFrame, prefix: str) -> pd.DataFrame:
         counts = row[tag_cols].to_numpy(dtype=float)
         total = counts.sum()
         if total == 0:
-            rows.append({"cluster_leiden": row["cluster_leiden"], f"dominant_{prefix}_tag": None, f"dominant_{prefix}_share": 0, f"{prefix}_entropy": None})
+            rows.append(
+                {
+                    "cluster_leiden": row["cluster_leiden"],
+                    f"dominant_{prefix}_tag": None,
+                    f"dominant_{prefix}_share": 0,
+                    f"{prefix}_entropy": None,
+                }
+            )
             continue
         shares = counts / total
         max_idx = int(np.argmax(shares))
@@ -88,7 +107,9 @@ def external_metrics(y_true, y_pred) -> dict[str, float]:
     }
 
 
-def pairwise_multilabel_metrics(df: pd.DataFrame, seed: int, max_pairs: int = 1_000_000) -> pd.DataFrame:
+def pairwise_multilabel_metrics(
+    df: pd.DataFrame, seed: int, max_pairs: int = 1_000_000
+) -> pd.DataFrame:
     n = len(df)
     total_pairs = n * (n - 1) // 2
     rng = np.random.default_rng(seed)
@@ -142,10 +163,20 @@ def pairwise_multilabel_metrics(df: pd.DataFrame, seed: int, max_pairs: int = 1_
     )
 
 
-def internal_metrics(features: np.ndarray, labels: np.ndarray, seed: int, modularity: float | None = None) -> pd.DataFrame:
+def internal_metrics(
+    features: np.ndarray, labels: np.ndarray, seed: int, modularity: float | None = None
+) -> pd.DataFrame:
     unique = np.unique(labels)
     if len(unique) < 2:
-        return pd.DataFrame([{"metric": "not_computable", "value": None, "reason": "fewer than two clusters"}])
+        return pd.DataFrame(
+            [
+                {
+                    "metric": "not_computable",
+                    "value": None,
+                    "reason": "fewer than two clusters",
+                }
+            ]
+        )
     sample_size = min(len(features), 3000)
     silhouette = silhouette_score(
         features,
@@ -155,24 +186,44 @@ def internal_metrics(features: np.ndarray, labels: np.ndarray, seed: int, modula
         random_state=seed,
     )
     rows = [
-        {"metric": "silhouette_cosine", "value": float(silhouette), "space": "embedding_or_pca"},
-        {"metric": "calinski_harabasz", "value": float(calinski_harabasz_score(features, labels)), "space": "pca"},
-        {"metric": "davies_bouldin", "value": float(davies_bouldin_score(features, labels)), "space": "pca"},
+        {
+            "metric": "silhouette_cosine",
+            "value": float(silhouette),
+            "space": "embedding_or_pca",
+        },
+        {
+            "metric": "calinski_harabasz",
+            "value": float(calinski_harabasz_score(features, labels)),
+            "space": "pca",
+        },
+        {
+            "metric": "davies_bouldin",
+            "value": float(davies_bouldin_score(features, labels)),
+            "space": "pca",
+        },
         {"metric": "modularity", "value": modularity, "space": "knn_graph"},
         {"metric": "cluster_count", "value": int(len(unique)), "space": "labels"},
-        {"metric": "largest_cluster_share", "value": float(pd.Series(labels).value_counts(normalize=True).max()), "space": "labels"},
+        {
+            "metric": "largest_cluster_share",
+            "value": float(pd.Series(labels).value_counts(normalize=True).max()),
+            "space": "labels",
+        },
     ]
     return pd.DataFrame(rows)
 
 
-def stability_grid(features: np.ndarray, seed: int) -> tuple[pd.DataFrame, pd.DataFrame]:
+def stability_grid(
+    features: np.ndarray, seed: int
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     seeds = [42, 123, 2026] if len(features) <= 5000 else [42, 123]
     grid_rows = []
     partitions: dict[str, np.ndarray] = {}
     for k in [15, 30, 50]:
         for resolution in [0.5, 1.0, 1.5]:
             for run_seed in seeds:
-                result = leiden_cluster(features, k=k, resolution=resolution, seed=run_seed)
+                result = leiden_cluster(
+                    features, k=k, resolution=resolution, seed=run_seed
+                )
                 key = f"k{k}_r{resolution}_s{run_seed}"
                 partitions[key] = result.labels
                 counts = pd.Series(result.labels).value_counts(normalize=True)
@@ -212,4 +263,3 @@ def save_heatmap(matrix: pd.DataFrame, path: str | Path) -> None:
         title="Cluster x macro tag row-normalized shares",
     )
     fig.write_html(path, include_plotlyjs="cdn", full_html=True)
-

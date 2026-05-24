@@ -30,6 +30,12 @@ python scripts/17_build_supervisor_notebook.py
 python scripts/run_all.py --skip-existing
 ```
 
+When configs or scripts changed and a full local rebuild is needed, run:
+
+```bash
+python scripts/run_all.py --force
+```
+
 The embedding step can be run in Colab/GPU by cloning this repository in the
 Colab runtime and running the same `scripts/02_compute_embeddings.py` command.
 The final clustering result is Leiden over `hybrid_dense_lexical_dw0.75_lw0.25`

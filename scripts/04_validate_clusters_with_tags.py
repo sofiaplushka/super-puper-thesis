@@ -10,7 +10,12 @@ import numpy as np
 import pandas as pd
 
 from thesis_pipeline.clustering import load_feature_matrix
-from thesis_pipeline.tag_mapping import load_macro_mapping, macro_lookup, normalize_tag, parse_json_list
+from thesis_pipeline.tag_mapping import (
+    load_macro_mapping,
+    macro_lookup,
+    normalize_tag,
+    parse_json_list,
+)
 from thesis_pipeline.validation import (
     cluster_tag_matrix,
     external_metrics,
@@ -42,7 +47,9 @@ def single_label_metrics(df: pd.DataFrame) -> pd.DataFrame:
     part = df.loc[mask]
     if part.empty:
         return pd.DataFrame()
-    metrics = external_metrics(part["macro_tags"].map(lambda x: parse_json_list(x)[0]), part["cluster_leiden"])
+    metrics = external_metrics(
+        part["macro_tags"].map(lambda x: parse_json_list(x)[0]), part["cluster_leiden"]
+    )
     metrics["rows"] = int(len(part))
     return pd.DataFrame([metrics])
 
@@ -62,7 +69,11 @@ def write_report(path: Path, tables: dict[str, pd.DataFrame]) -> None:
         "are handled explicitly through cluster-tag matrices and pairwise multilabel metrics.",
         "",
         "## Single-label external metrics",
-        tables["single"].to_markdown(index=False) if not tables["single"].empty else "No single-label rows.",
+        (
+            tables["single"].to_markdown(index=False)
+            if not tables["single"].empty
+            else "No single-label rows."
+        ),
         "",
         "## Primary macro approximation metrics",
         tables["primary"].to_markdown(index=False),
@@ -98,7 +109,9 @@ def write_report(path: Path, tables: dict[str, pd.DataFrame]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--embeddings", default="data/embeddings/tagged_bge_m3.npy")
     parser.add_argument("--pca", default="data/embeddings/tagged_pca128.npy")
     parser.add_argument("--tag-map", default="config/tag_macro_categories.yml")
@@ -112,17 +125,54 @@ def main() -> int:
     features = load_feature_matrix(args.embeddings, args.pca)
     labels = df["cluster_leiden"].to_numpy()
 
-    tag_distribution(df, "tags_raw", "tag_raw").to_csv("outputs/tables/tag_distribution_raw.csv", index=False, encoding="utf-8")
-    tag_distribution(df, "macro_tags", "macro_tag").to_csv("outputs/tables/tag_distribution_macro.csv", index=False, encoding="utf-8")
-    tag_count_distribution(df).to_csv("outputs/tables/tag_count_distribution.csv", index=False, encoding="utf-8")
-    unmapped_tags(df, args.tag_map).to_csv("outputs/tables/unmapped_tags.csv", index=False, encoding="utf-8")
+    tag_distribution(df, "tags_raw", "tag_raw").to_csv(
+        "outputs/tables/tag_distribution_raw.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tag_distribution(df, "macro_tags", "macro_tag").to_csv(
+        "outputs/tables/tag_distribution_macro.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    tag_count_distribution(df).to_csv(
+        "outputs/tables/tag_count_distribution.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    unmapped_tags(df, args.tag_map).to_csv(
+        "outputs/tables/unmapped_tags.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     raw_matrix = cluster_tag_matrix(df, "tags_raw")
     macro_matrix = cluster_tag_matrix(df, "macro_tags")
-    raw_matrix.to_csv("outputs/tables/cluster_raw_tag_matrix.csv", index=False, encoding="utf-8")
-    macro_matrix.to_csv("outputs/tables/cluster_macro_tag_matrix.csv", index=False, encoding="utf-8")
-    purity = purity_entropy(raw_matrix, "raw").merge(purity_entropy(macro_matrix, "macro"), on="cluster_leiden", how="outer")
-    purity.to_csv("outputs/tables/cluster_tag_purity_entropy.csv", index=False, encoding="utf-8")
+    raw_matrix.to_csv(
+        "outputs/tables/cluster_raw_tag_matrix.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    macro_matrix.to_csv(
+        "outputs/tables/cluster_macro_tag_matrix.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    purity = purity_entropy(raw_matrix, "raw").merge(
+        purity_entropy(macro_matrix, "macro"), on="cluster_leiden", how="outer"
+    )
+    purity.to_csv(
+        "outputs/tables/cluster_tag_purity_entropy.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     save_heatmap(macro_matrix, "outputs/figures/cluster_macro_tag_heatmap.html")
 
     single = single_label_metrics(df)
@@ -130,16 +180,51 @@ def main() -> int:
     pairwise = pairwise_multilabel_metrics(df, args.seed)
     internal = internal_metrics(features, labels, args.seed)
     grid, pair_grid = stability_grid(features, args.seed)
-    single.to_csv("outputs/tables/external_metrics_single_label.csv", index=False, encoding="utf-8")
-    primary.to_csv("outputs/tables/external_metrics_primary_macro.csv", index=False, encoding="utf-8")
-    pairwise.to_csv("outputs/tables/pairwise_multilabel_metrics.csv", index=False, encoding="utf-8")
-    internal.to_csv("outputs/tables/internal_cluster_metrics.csv", index=False, encoding="utf-8")
-    grid.to_csv("outputs/tables/leiden_stability_grid.csv", index=False, encoding="utf-8")
-    pair_grid.to_csv("outputs/tables/leiden_stability_pairwise.csv", index=False, encoding="utf-8")
+    single.to_csv(
+        "outputs/tables/external_metrics_single_label.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    primary.to_csv(
+        "outputs/tables/external_metrics_primary_macro.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    pairwise.to_csv(
+        "outputs/tables/pairwise_multilabel_metrics.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    internal.to_csv(
+        "outputs/tables/internal_cluster_metrics.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    grid.to_csv(
+        "outputs/tables/leiden_stability_grid.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    pair_grid.to_csv(
+        "outputs/tables/leiden_stability_pairwise.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     write_report(
         Path("outputs/report_notes/03_cluster_validation.md"),
-        {"single": single, "primary": primary, "pairwise": pairwise, "internal": internal},
+        {
+            "single": single,
+            "primary": primary,
+            "pairwise": pairwise,
+            "internal": internal,
+        },
     )
     print({"rows": len(df), "clusters": int(df["cluster_leiden"].nunique())})
     return 0

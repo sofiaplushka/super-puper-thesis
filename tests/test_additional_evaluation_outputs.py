@@ -9,8 +9,12 @@ import yaml
 
 
 def test_macro_tag_hierarchy_covers_current_macro_tags_once():
-    hierarchy = yaml.safe_load(Path("config/macro_tag_hierarchy.yml").read_text(encoding="utf-8"))
-    detailed = yaml.safe_load(Path("config/tag_macro_categories.yml").read_text(encoding="utf-8"))
+    hierarchy = yaml.safe_load(
+        Path("config/macro_tag_hierarchy.yml").read_text(encoding="utf-8")
+    )
+    detailed = yaml.safe_load(
+        Path("config/tag_macro_categories.yml").read_text(encoding="utf-8")
+    )
     assert 6 <= len(hierarchy) <= 8
     mapped = []
     for spec in hierarchy.values():
@@ -28,14 +32,26 @@ def test_hierarchical_metrics_are_present_and_aligned_with_final_level2():
         ("level_2_detailed", "single_clear_label"),
     }
     assert set(map(tuple, metrics[["label_level", "subset"]].to_numpy())) == required
-    for column in ["ari", "ami", "nmi", "homogeneity", "completeness", "v_measure", "pairwise_f1"]:
+    for column in [
+        "ari",
+        "ami",
+        "nmi",
+        "homogeneity",
+        "completeness",
+        "v_measure",
+        "pairwise_f1",
+    ]:
         assert metrics[column].between(0, 1).all()
 
     final = pd.read_csv("outputs/tables/final_metrics_summary.csv")
     final_all = final[(final["model"] == "final") & (final["subset"] == "all")].iloc[0]
-    level2_all = metrics[(metrics["label_level"] == "level_2_detailed") & (metrics["subset"] == "all")].iloc[0]
+    level2_all = metrics[
+        (metrics["label_level"] == "level_2_detailed") & (metrics["subset"] == "all")
+    ].iloc[0]
     assert level2_all["v_measure"] == pytest.approx(final_all["v_measure"], rel=1e-9)
-    assert level2_all["pairwise_f1"] == pytest.approx(final_all["pairwise_f1"], rel=1e-9)
+    assert level2_all["pairwise_f1"] == pytest.approx(
+        final_all["pairwise_f1"], rel=1e-9
+    )
 
 
 def test_supervised_tag_prediction_baseline_outputs_are_controls():
@@ -49,11 +65,20 @@ def test_supervised_tag_prediction_baseline_outputs_are_controls():
         "bge_pca128",
         "hybrid_word_char_bge_pca",
     }.issubset(set(df["feature_set"]))
-    for column in ["macro_f1", "micro_f1", "weighted_f1", "micro_precision", "micro_recall", "subset_accuracy"]:
+    for column in [
+        "macro_f1",
+        "micro_f1",
+        "weighted_f1",
+        "micro_precision",
+        "micro_recall",
+        "subset_accuracy",
+    ]:
         assert df[column].between(0, 1).all()
     assert df[df["split"] == "test"]["micro_f1"].max() > 0.5
 
-    note = Path("outputs/report_notes/14_supervised_tag_prediction_baseline.md").read_text(encoding="utf-8")
+    note = Path(
+        "outputs/report_notes/14_supervised_tag_prediction_baseline.md"
+    ).read_text(encoding="utf-8")
     assert "not clustering" in note
     assert "Tags are not appended" in note
 
@@ -65,7 +90,11 @@ def test_semi_supervised_upper_bound_is_label_guided_and_separate():
     assert clustered["cluster_final"].nunique() == 20
     assert set(clustered["feature_set"]) == {"hybrid_dense_lexical_dw0.75_lw0.25"}
 
-    manifest = json.loads(Path("data/embeddings/tagged_bge_m3_finetuned.manifest.json").read_text(encoding="utf-8"))
+    manifest = json.loads(
+        Path("data/embeddings/tagged_bge_m3_finetuned.manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
     assert manifest["label_guided"] is True
     assert manifest["independent_external_validation"] is False
     assert manifest["backend"] == "torch_linear_projection_contrastive"
@@ -78,7 +107,9 @@ def test_semi_supervised_upper_bound_is_label_guided_and_separate():
     assert selected["v_measure"].between(0, 1).all()
     assert selected["pairwise_f1"].between(0, 1).all()
 
-    note = Path("outputs/report_notes/15_semi_supervised_upper_bound.md").read_text(encoding="utf-8")
+    note = Path("outputs/report_notes/15_semi_supervised_upper_bound.md").read_text(
+        encoding="utf-8"
+    )
     assert "not independent external validation" in note
     assert "upper-bound" in note
 
@@ -109,7 +140,9 @@ def test_final_evaluation_story_and_supervisor_notebook():
     assert len(markdown_cells) >= 14
     assert sum(bool(cell.get("outputs")) for cell in code_cells) >= 15
     assert all(cell.get("execution_count") is not None for cell in code_cells)
-    markdown = "\n".join(cell.source for cell in nb.cells if cell.cell_type == "markdown")
+    markdown = "\n".join(
+        cell.source for cell in nb.cells if cell.cell_type == "markdown"
+    )
     all_source = "\n".join(cell.source for cell in nb.cells)
     assert "Кластеризация анекдотов" in markdown
     assert "Получение эмбеддингов" in markdown
@@ -126,4 +159,6 @@ def test_final_evaluation_story_and_supervisor_notebook():
     assert export.exists() and export.stat().st_size > 0
     exported = pd.read_csv(export)
     assert len(exported) == 5509
-    assert {"cluster_final", "umap2_x", "umap2_y", "text_clean"}.issubset(exported.columns)
+    assert {"cluster_final", "umap2_x", "umap2_y", "text_clean"}.issubset(
+        exported.columns
+    )

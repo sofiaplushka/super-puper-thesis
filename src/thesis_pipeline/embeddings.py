@@ -71,7 +71,9 @@ def compute_embeddings(
     return embeddings, meta
 
 
-def compute_pca(embeddings: np.ndarray, n_components: int, seed: int) -> tuple[np.ndarray, dict[str, object]]:
+def compute_pca(
+    embeddings: np.ndarray, n_components: int, seed: int
+) -> tuple[np.ndarray, dict[str, object]]:
     if embeddings.shape[1] <= n_components:
         return embeddings.astype("float32", copy=False), {
             "skipped": True,
@@ -88,7 +90,9 @@ def compute_pca(embeddings: np.ndarray, n_components: int, seed: int) -> tuple[n
 
 
 def write_manifest(path: str | Path, data: dict[str, object]) -> None:
-    Path(path).write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    Path(path).write_text(
+        json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
 
 def manifest_matches(path: str | Path, expected: dict[str, object]) -> bool:
@@ -171,6 +175,7 @@ def save_text_hashes(df: pd.DataFrame, id_column: str, output_path: str | Path) 
         output_path,
         index=False,
         encoding="utf-8",
+        lineterminator="\n",
     )
 
 
@@ -220,8 +225,9 @@ def complete_manifest(
             "max_seq_length": model_meta.get("max_seq_length"),
             "token_length_stats": token_stats,
             "truncated_text_count": model_meta.get("truncated_text_count"),
-            "pca_explained_variance_ratio_sum": pca_meta.get("explained_variance_ratio_sum"),
+            "pca_explained_variance_ratio_sum": pca_meta.get(
+                "explained_variance_ratio_sum"
+            ),
         }
     )
     return manifest
-

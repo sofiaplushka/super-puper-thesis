@@ -21,8 +21,12 @@ from thesis_pipeline.clustering import (
 from thesis_pipeline.visualization import save_pca3d, save_umap2d, save_umap3d
 
 
-def write_report(path: Path, df: pd.DataFrame, args, result, sizes: pd.DataFrame) -> None:
-    imbalance = float(sizes["share"].max() / sizes["share"].median()) if len(sizes) else 0.0
+def write_report(
+    path: Path, df: pd.DataFrame, args, result, sizes: pd.DataFrame
+) -> None:
+    imbalance = (
+        float(sizes["share"].max() / sizes["share"].median()) if len(sizes) else 0.0
+    )
     lines = [
         "# 3D UMAP and Leiden clustering",
         "",
@@ -68,7 +72,13 @@ def main() -> int:
     parser.add_argument("--umap-min-dist", type=float, default=0.1)
     args = parser.parse_args()
 
-    for folder in ["data/processed", "data/embeddings", "outputs/figures", "outputs/tables", "outputs/report_notes"]:
+    for folder in [
+        "data/processed",
+        "data/embeddings",
+        "outputs/figures",
+        "outputs/tables",
+        "outputs/report_notes",
+    ]:
         Path(folder).mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(args.dataset)
@@ -81,7 +91,9 @@ def main() -> int:
         from sklearn.cluster import KMeans
 
         n_clusters = df["cluster_leiden"].nunique()
-        df["cluster_kmeans"] = KMeans(n_clusters=n_clusters, random_state=args.seed, n_init=10).fit_predict(features)
+        df["cluster_kmeans"] = KMeans(
+            n_clusters=n_clusters, random_state=args.seed, n_init=10
+        ).fit_predict(features)
     except Exception:
         pass
     umap2 = run_umap(features, 2, args.umap_neighbors, args.umap_min_dist, args.seed)
@@ -90,23 +102,59 @@ def main() -> int:
     np.save("data/embeddings/tagged_umap3d.npy", umap3)
     df["umap2_x"], df["umap2_y"] = umap2[:, 0], umap2[:, 1]
     df["umap3_x"], df["umap3_y"], df["umap3_z"] = umap3[:, 0], umap3[:, 1], umap3[:, 2]
-    df.to_csv("data/processed/anekdots_tagged_clustered.csv", index=False, encoding="utf-8")
+    df.to_csv(
+        "data/processed/anekdots_tagged_clustered.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     sizes = cluster_size_table(result.labels)
     summary = summarize_clusters(df)
     central, borderline = central_and_borderline_examples(df, features, per_cluster=10)
-    sizes.to_csv("outputs/tables/cluster_sizes.csv", index=False, encoding="utf-8")
-    summary.to_csv("outputs/tables/cluster_summary.csv", index=False, encoding="utf-8")
-    central.to_csv("outputs/tables/cluster_central_examples.csv", index=False, encoding="utf-8")
-    borderline.to_csv("outputs/tables/cluster_borderline_examples.csv", index=False, encoding="utf-8")
+    sizes.to_csv(
+        "outputs/tables/cluster_sizes.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    summary.to_csv(
+        "outputs/tables/cluster_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    central.to_csv(
+        "outputs/tables/cluster_central_examples.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    borderline.to_csv(
+        "outputs/tables/cluster_borderline_examples.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     save_umap2d(df, "outputs/figures/umap2d_leiden.html")
     save_umap3d(df, "outputs/figures/umap3d_leiden.html")
     save_pca3d(df, pca3d(features, args.seed), "outputs/figures/pca3d_baseline.html")
-    write_report(Path("outputs/report_notes/02_3d_umap_and_clustering.md"), df, args, result, sizes)
-    print({"rows": len(df), "clusters": int(df["cluster_leiden"].nunique()), "modularity": result.modularity})
+    write_report(
+        Path("outputs/report_notes/02_3d_umap_and_clustering.md"),
+        df,
+        args,
+        result,
+        sizes,
+    )
+    print(
+        {
+            "rows": len(df),
+            "clusters": int(df["cluster_leiden"].nunique()),
+            "modularity": result.modularity,
+        }
+    )
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

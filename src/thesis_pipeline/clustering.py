@@ -21,7 +21,9 @@ class LeidenResult:
     used_fallback: bool
 
 
-def load_feature_matrix(embeddings_path: str | Path, pca_path: str | Path | None = None) -> np.ndarray:
+def load_feature_matrix(
+    embeddings_path: str | Path, pca_path: str | Path | None = None
+) -> np.ndarray:
     if pca_path and Path(pca_path).exists():
         return np.load(pca_path).astype("float32", copy=False)
     return np.load(embeddings_path).astype("float32", copy=False)
@@ -50,12 +52,20 @@ def build_knn_graph(features: np.ndarray, k: int):
     return graph
 
 
-def leiden_cluster(features: np.ndarray, k: int, resolution: float, seed: int) -> LeidenResult:
+def leiden_cluster(
+    features: np.ndarray, k: int, resolution: float, seed: int
+) -> LeidenResult:
     try:
         import leidenalg
     except Exception:
-        labels = KMeans(n_clusters=max(2, min(12, len(features) // 40)), random_state=seed, n_init=10).fit_predict(features)
-        return LeidenResult(labels=np.asarray(labels), modularity=None, used_fallback=True)
+        labels = KMeans(
+            n_clusters=max(2, min(12, len(features) // 40)),
+            random_state=seed,
+            n_init=10,
+        ).fit_predict(features)
+        return LeidenResult(
+            labels=np.asarray(labels), modularity=None, used_fallback=True
+        )
     graph = build_knn_graph(features, k)
     partition = leidenalg.find_partition(
         graph,
@@ -65,10 +75,20 @@ def leiden_cluster(features: np.ndarray, k: int, resolution: float, seed: int) -
         seed=seed,
     )
     modularity = graph.modularity(partition.membership, weights=graph.es["weight"])
-    return LeidenResult(labels=np.asarray(partition.membership, dtype=int), modularity=float(modularity), used_fallback=False)
+    return LeidenResult(
+        labels=np.asarray(partition.membership, dtype=int),
+        modularity=float(modularity),
+        used_fallback=False,
+    )
 
 
-def run_umap(features: np.ndarray, n_components: int, n_neighbors: int, min_dist: float, seed: int) -> np.ndarray:
+def run_umap(
+    features: np.ndarray,
+    n_components: int,
+    n_neighbors: int,
+    min_dist: float,
+    seed: int,
+) -> np.ndarray:
     import umap
 
     reducer = umap.UMAP(
@@ -108,10 +128,16 @@ def summarize_clusters(df: pd.DataFrame) -> pd.DataFrame:
             {
                 "cluster_leiden": cluster,
                 "size": len(part),
-                "dominant_raw_tag": max(raw_counts, key=raw_counts.get) if raw_counts else None,
+                "dominant_raw_tag": (
+                    max(raw_counts, key=raw_counts.get) if raw_counts else None
+                ),
                 "dominant_raw_tag_count": max(raw_counts.values()) if raw_counts else 0,
-                "dominant_macro_tag": max(macro_counts, key=macro_counts.get) if macro_counts else None,
-                "dominant_macro_tag_count": max(macro_counts.values()) if macro_counts else 0,
+                "dominant_macro_tag": (
+                    max(macro_counts, key=macro_counts.get) if macro_counts else None
+                ),
+                "dominant_macro_tag_count": (
+                    max(macro_counts.values()) if macro_counts else 0
+                ),
                 "year_min": int(part["year"].min()),
                 "year_max": int(part["year"].max()),
             }
@@ -119,7 +145,9 @@ def summarize_clusters(df: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows).sort_values("size", ascending=False)
 
 
-def central_and_borderline_examples(df: pd.DataFrame, features: np.ndarray, per_cluster: int = 10) -> tuple[pd.DataFrame, pd.DataFrame]:
+def central_and_borderline_examples(
+    df: pd.DataFrame, features: np.ndarray, per_cluster: int = 10
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     labels = df["cluster_leiden"].to_numpy()
     centroids = {}
     for cluster in sorted(np.unique(labels)):
@@ -139,10 +167,16 @@ def central_and_borderline_examples(df: pd.DataFrame, features: np.ndarray, per_
         margin = nearest_other - own
         borderline_idx = idx[np.argsort(margin)[:per_cluster]]
         for rank, row_idx in enumerate(central_idx, start=1):
-            central_rows.append(example_record(df.iloc[row_idx], rank, own[np.where(idx == row_idx)[0][0]]))
+            central_rows.append(
+                example_record(
+                    df.iloc[row_idx], rank, own[np.where(idx == row_idx)[0][0]]
+                )
+            )
         for rank, row_idx in enumerate(borderline_idx, start=1):
             local = np.where(idx == row_idx)[0][0]
-            borderline_rows.append(example_record(df.iloc[row_idx], rank, margin[local]))
+            borderline_rows.append(
+                example_record(df.iloc[row_idx], rank, margin[local])
+            )
     return pd.DataFrame(central_rows), pd.DataFrame(borderline_rows)
 
 
@@ -161,5 +195,8 @@ def example_record(row: pd.Series, rank: int, score: float) -> dict[str, object]
 
 
 def pca3d(features: np.ndarray, seed: int) -> np.ndarray:
-    return PCA(n_components=3, random_state=seed).fit_transform(features).astype("float32", copy=False)
-
+    return (
+        PCA(n_components=3, random_state=seed)
+        .fit_transform(features)
+        .astype("float32", copy=False)
+    )

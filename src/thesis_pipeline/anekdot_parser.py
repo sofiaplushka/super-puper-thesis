@@ -13,8 +13,18 @@ import pandas as pd
 import requests
 from bs4 import BeautifulSoup
 
-from thesis_pipeline.tag_mapping import json_list, load_macro_mapping, map_tags, normalize_tag
-from thesis_pipeline.text_normalization import count_words, normalize_text, text_hash, truncate_text
+from thesis_pipeline.tag_mapping import (
+    json_list,
+    load_macro_mapping,
+    map_tags,
+    normalize_tag,
+)
+from thesis_pipeline.text_normalization import (
+    count_words,
+    normalize_text,
+    text_hash,
+    truncate_text,
+)
 
 BASE_URL = "https://www.anekdot.ru"
 USER_AGENT = "Mozilla/5.0 (compatible; tagged-thesis-pipeline/1.0)"
@@ -132,7 +142,9 @@ def parse_box(box, archive_url: str, year: int, month: int) -> dict[str, object]
     if not text:
         return None
 
-    title_text = normalize_text((box.select_one("p.title") or box).get_text(" ", strip=True))
+    title_text = normalize_text(
+        (box.select_one("p.title") or box).get_text(" ", strip=True)
+    )
     joke_id = box.get("data-id") or ""
     permalink = f"{BASE_URL}/id/{joke_id}/" if joke_id else archive_url
     author = box.select_one("a.auth")
@@ -157,7 +169,11 @@ def parse_box(box, archive_url: str, year: int, month: int) -> dict[str, object]
         "text_length_words": count_words(text),
         "rating": parse_rating(box),
         "author": normalize_text(author.get_text(" ", strip=True)) if author else None,
-        "author_url": urljoin(BASE_URL, author.get("href")) if author and author.get("href") else None,
+        "author_url": (
+            urljoin(BASE_URL, author.get("href"))
+            if author and author.get("href")
+            else None
+        ),
         "tags_raw_list": raw_tags,
         "tags_norm_list": norm_tags,
     }
@@ -200,11 +216,15 @@ def build_tag_dictionary(session: requests.Session) -> pd.DataFrame:
             if norm in seen:
                 continue
             seen.add(norm)
-            rows.append({"tag_raw": tag, "tag_norm": norm, "url": urljoin(BASE_URL, href)})
+            rows.append(
+                {"tag_raw": tag, "tag_norm": norm, "url": urljoin(BASE_URL, href)}
+            )
     return pd.DataFrame(rows).sort_values("tag_norm").reset_index(drop=True)
 
 
-def choose_month_rows(rows: list[dict[str, object]], settings: BuildSettings) -> list[dict[str, object]]:
+def choose_month_rows(
+    rows: list[dict[str, object]], settings: BuildSettings
+) -> list[dict[str, object]]:
     if len(rows) <= settings.max_per_month:
         selected = list(rows)
     else:
@@ -217,7 +237,9 @@ def choose_month_rows(rows: list[dict[str, object]], settings: BuildSettings) ->
     return selected
 
 
-def deduplicate_rows(rows: list[dict[str, object]]) -> tuple[list[dict[str, object]], pd.DataFrame]:
+def deduplicate_rows(
+    rows: list[dict[str, object]],
+) -> tuple[list[dict[str, object]], pd.DataFrame]:
     by_hash: dict[str, dict[str, object]] = {}
     duplicate_records = []
     for row in rows:
@@ -236,7 +258,9 @@ def deduplicate_rows(rows: list[dict[str, object]]) -> tuple[list[dict[str, obje
                 "text_preview": truncate_text(str(row["text"]), 200),
             }
         )
-        tags = list(dict.fromkeys(list(kept["tags_raw_list"]) + list(row["tags_raw_list"])))
+        tags = list(
+            dict.fromkeys(list(kept["tags_raw_list"]) + list(row["tags_raw_list"]))
+        )
         kept["tags_raw_list"] = tags
         kept["tags_norm_list"] = [normalize_tag(t) for t in tags]
     return list(by_hash.values()), pd.DataFrame(duplicate_records)
@@ -256,7 +280,9 @@ def finalize_rows(
         tags_norm = list(row.pop("tags_norm_list"))
         macro_tags, unmapped = map_tags(tags_raw, mapping)
         for tag in unmapped:
-            unmapped_records.append({"tag_raw": tag, "tag_norm": normalize_tag(tag), "id": row["id"]})
+            unmapped_records.append(
+                {"tag_raw": tag, "tag_norm": normalize_tag(tag), "id": row["id"]}
+            )
         row.update(
             {
                 "tags_raw": json_list(tags_raw),
@@ -273,7 +299,11 @@ def finalize_rows(
     for column in ARCHIVE_COLUMNS:
         if column not in df.columns:
             df[column] = None
-    df = df[ARCHIVE_COLUMNS].sort_values(["year", "month", "selected_rank_in_month", "id"]).reset_index(drop=True)
+    df = (
+        df[ARCHIVE_COLUMNS]
+        .sort_values(["year", "month", "selected_rank_in_month", "id"])
+        .reset_index(drop=True)
+    )
     unmapped_df = pd.DataFrame(unmapped_records)
     return df, unmapped_df
 
@@ -289,7 +319,9 @@ def build_tagged_dataset(
     all_rows: list[dict[str, object]] = []
     coverage_rows = []
     for year, month in iter_months(settings):
-        rows, archive_url, candidate_count_total = parse_archive_month(session, year, month)
+        rows, archive_url, candidate_count_total = parse_archive_month(
+            session, year, month
+        )
         selected = choose_month_rows(rows, settings) if rows else []
         all_rows.extend(selected)
         coverage_rows.append(
@@ -322,7 +354,9 @@ def build_tagged_dataset(
         "duplicate_count": len(duplicates),
         "months_total": len(coverage),
         "months_with_selected": int((coverage["selected_count"] > 0).sum()),
-        "months_zero_tagged": int((coverage["candidate_count_tagged_month"] == 0).sum()),
+        "months_zero_tagged": int(
+            (coverage["candidate_count_tagged_month"] == 0).sum()
+        ),
     }
     tables = {
         "coverage": coverage,
@@ -332,4 +366,3 @@ def build_tagged_dataset(
         "unmapped": unmapped,
     }
     return df, stats, tables
-

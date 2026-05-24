@@ -54,7 +54,9 @@ def split_indices(tag_sets: list[set[str]], seed: int) -> Split:
         )
     except ValueError:
         train_idx, temp_idx = train_test_split(idx, test_size=0.40, random_state=seed)
-        val_idx, holdout_idx = train_test_split(temp_idx, test_size=0.50, random_state=seed)
+        val_idx, holdout_idx = train_test_split(
+            temp_idx, test_size=0.50, random_state=seed
+        )
     return Split(np.asarray(train_idx), np.asarray(val_idx), np.asarray(holdout_idx))
 
 
@@ -91,7 +93,11 @@ def sample_pairs(
             }
         )
         if positive_pool:
-            chosen = rng.choice(positive_pool, size=min(positives_per_anchor, len(positive_pool)), replace=False)
+            chosen = rng.choice(
+                positive_pool,
+                size=min(positives_per_anchor, len(positive_pool)),
+                replace=False,
+            )
             for j in chosen:
                 rows.append((i, int(j), 1, "positive_shared_macro_tag"))
 
@@ -128,7 +134,13 @@ def sample_pairs(
     stats = {
         "positive_pairs": int(sum(1 for _, _, y in pair_rows if y == 1)),
         "negative_pairs": int(sum(1 for _, _, y in pair_rows if y == 0)),
-        "hard_negative_pairs": int(sum(1 for source in dedup.values() if source == "hard_negative_nearest_disjoint")),
+        "hard_negative_pairs": int(
+            sum(
+                1
+                for source in dedup.values()
+                if source == "hard_negative_nearest_disjoint"
+            )
+        ),
         "total_pairs": int(len(pair_rows)),
     }
     return np.asarray(pair_rows, dtype=np.int64), stats
@@ -157,7 +169,9 @@ def train_projection(
     torch.manual_seed(seed)
     x = torch.tensor(features, dtype=torch.float32)
     model = Projection(features.shape[1], output_dim)
-    optimizer = torch.optim.AdamW(model.parameters(), lr=learning_rate, weight_decay=1e-4)
+    optimizer = torch.optim.AdamW(
+        model.parameters(), lr=learning_rate, weight_decay=1e-4
+    )
     pair_tensor = torch.tensor(pairs, dtype=torch.long)
     losses = []
     for _ in range(epochs):
@@ -179,7 +193,11 @@ def train_projection(
         losses.append(float(np.mean(epoch_losses)))
     with torch.no_grad():
         embeddings = model(x).cpu().numpy().astype("float32", copy=False)
-    return embeddings, {"initial_loss": losses[0], "final_loss": losses[-1], "epochs": float(epochs)}
+    return embeddings, {
+        "initial_loss": losses[0],
+        "final_loss": losses[-1],
+        "epochs": float(epochs),
+    }
 
 
 def evaluate_subset(
@@ -231,16 +249,30 @@ def candidate_rows(
                     },
                 )
             )
-    candidates = pd.DataFrame(rows).sort_values("selection_score", ascending=False).reset_index(drop=True)
+    candidates = (
+        pd.DataFrame(rows)
+        .sort_values("selection_score", ascending=False)
+        .reset_index(drop=True)
+    )
     best = candidates.iloc[0].to_dict()
     best["selected"] = True
     selected_labels = labels_by_key[str(best["params"])]
     return candidates, best, selected_labels
 
 
-def write_note(metrics: pd.DataFrame, comparison: pd.DataFrame, manifest: dict[str, object], output: str | Path) -> None:
-    holdout = metrics[(metrics["split"].eq("holdout")) & (metrics["selected"].eq(True))].iloc[0]
-    full = metrics[(metrics["split"].eq("full_corpus_label_guided")) & (metrics["selected"].eq(True))].iloc[0]
+def write_note(
+    metrics: pd.DataFrame,
+    comparison: pd.DataFrame,
+    manifest: dict[str, object],
+    output: str | Path,
+) -> None:
+    holdout = metrics[
+        (metrics["split"].eq("holdout")) & (metrics["selected"].eq(True))
+    ].iloc[0]
+    full = metrics[
+        (metrics["split"].eq("full_corpus_label_guided"))
+        & (metrics["selected"].eq(True))
+    ].iloc[0]
     lines = [
         "# Semi-supervised embedding upper-bound",
         "",
@@ -298,12 +330,24 @@ def write_note(metrics: pd.DataFrame, comparison: pd.DataFrame, manifest: dict[s
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--pca", default="data/embeddings/tagged_pca128.npy")
-    parser.add_argument("--embedding-output", default="data/embeddings/tagged_bge_m3_finetuned.npy")
-    parser.add_argument("--metrics-output", default="outputs/tables/semi_supervised_embedding_metrics.csv")
-    parser.add_argument("--comparison-output", default="outputs/tables/semi_supervised_vs_unsupervised.csv")
-    parser.add_argument("--note", default="outputs/report_notes/15_semi_supervised_upper_bound.md")
+    parser.add_argument(
+        "--embedding-output", default="data/embeddings/tagged_bge_m3_finetuned.npy"
+    )
+    parser.add_argument(
+        "--metrics-output",
+        default="outputs/tables/semi_supervised_embedding_metrics.csv",
+    )
+    parser.add_argument(
+        "--comparison-output",
+        default="outputs/tables/semi_supervised_vs_unsupervised.csv",
+    )
+    parser.add_argument(
+        "--note", default="outputs/report_notes/15_semi_supervised_upper_bound.md"
+    )
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--epochs", type=int, default=8)
     parser.add_argument("--output-dim", type=int, default=64)
@@ -373,9 +417,15 @@ def main() -> int:
         ),
     ]
     metrics = pd.concat([candidates, pd.DataFrame(selected_rows)], ignore_index=True)
-    metrics.loc[metrics["params"].eq(best["params"]) & metrics["split"].eq("validation_selection"), "selected"] = True
+    metrics.loc[
+        metrics["params"].eq(best["params"])
+        & metrics["split"].eq("validation_selection"),
+        "selected",
+    ] = True
     Path(args.metrics_output).parent.mkdir(parents=True, exist_ok=True)
-    metrics.to_csv(args.metrics_output, index=False, encoding="utf-8")
+    metrics.to_csv(
+        args.metrics_output, index=False, encoding="utf-8", lineterminator="\n"
+    )
 
     unsup_labels = df["cluster_final"].to_numpy()
     comparison_rows = [
@@ -416,7 +466,9 @@ def main() -> int:
         *selected_rows,
     ]
     comparison = pd.DataFrame(comparison_rows)
-    comparison.to_csv(args.comparison_output, index=False, encoding="utf-8")
+    comparison.to_csv(
+        args.comparison_output, index=False, encoding="utf-8", lineterminator="\n"
+    )
 
     split_df = pd.DataFrame(
         {
@@ -427,7 +479,12 @@ def main() -> int:
     split_df.loc[split.train_idx, "semi_supervised_split"] = "train"
     split_df.loc[split.val_idx, "semi_supervised_split"] = "validation"
     split_df.loc[split.holdout_idx, "semi_supervised_split"] = "holdout"
-    split_df.to_csv("outputs/tables/semi_supervised_split_assignments.csv", index=False, encoding="utf-8")
+    split_df.to_csv(
+        "outputs/tables/semi_supervised_split_assignments.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     manifest = {
         "embedding_file": args.embedding_output,
@@ -435,7 +492,10 @@ def main() -> int:
         "backend": "torch_linear_projection_contrastive",
         "label_guided": True,
         "independent_external_validation": False,
-        "sentence_transformers_available": importlib.util.find_spec("sentence_transformers") is not None,
+        "sentence_transformers_available": importlib.util.find_spec(
+            "sentence_transformers"
+        )
+        is not None,
         "train_rows": int(len(split.train_idx)),
         "validation_rows": int(len(split.val_idx)),
         "holdout_rows": int(len(split.holdout_idx)),
@@ -450,7 +510,9 @@ def main() -> int:
         ),
     }
     manifest_path = Path(args.embedding_output).with_suffix(".manifest.json")
-    manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     write_note(metrics, comparison, manifest, args.note)
     return 0
 

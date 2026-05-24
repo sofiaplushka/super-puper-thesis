@@ -45,14 +45,23 @@ def primary_labels(series: Iterable[object]) -> list[str]:
 
 
 def mask_excluding_other(df: pd.DataFrame) -> np.ndarray:
-    return np.asarray(["other" not in tags and bool(tags) for tags in macro_sets(df["macro_tags"])])
+    return np.asarray(
+        ["other" not in tags and bool(tags) for tags in macro_sets(df["macro_tags"])]
+    )
 
 
 def mask_single_clear_label(df: pd.DataFrame) -> np.ndarray:
-    return np.asarray([len(tags) == 1 and "other" not in tags for tags in macro_sets(df["macro_tags"])])
+    return np.asarray(
+        [
+            len(tags) == 1 and "other" not in tags
+            for tags in macro_sets(df["macro_tags"])
+        ]
+    )
 
 
-def external_metrics(labels_true: Iterable[object], labels_pred: Iterable[object]) -> dict[str, float]:
+def external_metrics(
+    labels_true: Iterable[object], labels_pred: Iterable[object]
+) -> dict[str, float]:
     y_true = list(labels_true)
     y_pred = list(labels_pred)
     if len(set(y_true)) < 2 or len(set(y_pred)) < 2:
@@ -98,7 +107,9 @@ def shared_label_pair_count(mask_counts: Counter[int]) -> int:
     return int(total)
 
 
-def exact_pairwise_multilabel(labels_pred: Iterable[object], tag_sets: list[set[str]]) -> PairwiseCounts:
+def exact_pairwise_multilabel(
+    labels_pred: Iterable[object], tag_sets: list[set[str]]
+) -> PairwiseCounts:
     pred = list(labels_pred)
     masks, _ = masks_to_ints(tag_sets)
     n = len(pred)
@@ -178,7 +189,8 @@ def metric_suite(df: pd.DataFrame, labels_pred: Iterable[object]) -> pd.DataFram
         [
             metric_row(df, labels_pred, "all"),
             metric_row(df, labels_pred, "excluding_other", mask_excluding_other(df)),
-            metric_row(df, labels_pred, "single_clear_label", mask_single_clear_label(df)),
+            metric_row(
+                df, labels_pred, "single_clear_label", mask_single_clear_label(df)
+            ),
         ]
     )
-

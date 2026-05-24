@@ -61,7 +61,9 @@ def write_report(path: Path, tables: dict[str, pd.DataFrame]) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--dataset", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--validation-dir", default="outputs/tables")
     parser.add_argument("--seed", type=int, default=42)
     args = parser.parse_args()
@@ -81,23 +83,66 @@ def main() -> int:
     borderline_path = Path(args.validation_dir) / "cluster_borderline_examples.csv"
     purity = pd.read_csv(purity_path) if purity_path.exists() else pd.DataFrame()
     central = pd.read_csv(central_path) if central_path.exists() else pd.DataFrame()
-    borderline = pd.read_csv(borderline_path) if borderline_path.exists() else pd.DataFrame()
+    borderline = (
+        pd.read_csv(borderline_path) if borderline_path.exists() else pd.DataFrame()
+    )
     interpretability = interpretability_summary(df, purity, central, borderline)
     robustness = robustness_summary(args.validation_dir)
 
-    bias.to_csv("outputs/tables/weakness_dataset_bias.csv", index=False, encoding="utf-8")
-    duplicates.to_csv("outputs/tables/weakness_duplicate_examples.csv", index=False, encoding="utf-8")
-    length_cluster.to_csv("outputs/tables/weakness_length_by_cluster.csv", index=False, encoding="utf-8")
-    length_macro.to_csv("outputs/tables/weakness_length_by_macro_tag.csv", index=False, encoding="utf-8")
-    interpretability.to_csv("outputs/tables/cluster_interpretability_summary.csv", index=False, encoding="utf-8")
-    structural_cluster.to_csv("outputs/tables/structural_features_by_cluster.csv", index=False, encoding="utf-8")
-    structural_macro.to_csv("outputs/tables/structural_features_by_macro_tag.csv", index=False, encoding="utf-8")
-    robustness.to_csv("outputs/tables/weakness_robustness_summary.csv", index=False, encoding="utf-8")
-    write_report(Path("outputs/report_notes/04_weaknesses_and_improvements.md"), {"bias": bias})
+    bias.to_csv(
+        "outputs/tables/weakness_dataset_bias.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    duplicates.to_csv(
+        "outputs/tables/weakness_duplicate_examples.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    length_cluster.to_csv(
+        "outputs/tables/weakness_length_by_cluster.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    length_macro.to_csv(
+        "outputs/tables/weakness_length_by_macro_tag.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    interpretability.to_csv(
+        "outputs/tables/cluster_interpretability_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    structural_cluster.to_csv(
+        "outputs/tables/structural_features_by_cluster.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    structural_macro.to_csv(
+        "outputs/tables/structural_features_by_macro_tag.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    robustness.to_csv(
+        "outputs/tables/weakness_robustness_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    write_report(
+        Path("outputs/report_notes/04_weaknesses_and_improvements.md"), {"bias": bias}
+    )
     print({"rows": len(df), "weakness_tables": 8})
     return 0
 
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

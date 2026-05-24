@@ -29,12 +29,13 @@ from thesis_pipeline.strong_metrics import metric_suite
 from thesis_pipeline.tag_mapping import parse_json_list
 from thesis_pipeline.text_normalization import truncate_text
 
-
 SEARCH_MODULE_PATH = Path(__file__).with_name("08_feature_ablation_and_search.py")
 
 
 def load_search_module():
-    spec = importlib.util.spec_from_file_location("strong_search_module", SEARCH_MODULE_PATH)
+    spec = importlib.util.spec_from_file_location(
+        "strong_search_module", SEARCH_MODULE_PATH
+    )
     if spec is None or spec.loader is None:
         raise RuntimeError(f"Cannot load {SEARCH_MODULE_PATH}")
     module = importlib.util.module_from_spec(spec)
@@ -60,12 +61,24 @@ def parse_params(text: object) -> dict[str, str]:
 
 def load_features() -> dict[str, np.ndarray]:
     features = {
-        "dense_bge_pca": normalize(np.load("data/features/dense_bge_pca.npy"), norm="l2").astype("float32", copy=False),
-        "tfidf_word_svd": normalize(np.load("data/features/tfidf_word_svd.npy"), norm="l2").astype("float32", copy=False),
-        "tfidf_char_svd": normalize(np.load("data/features/tfidf_char_svd.npy"), norm="l2").astype("float32", copy=False),
-        "structural_features": normalize(np.load("data/features/structural_features.npy"), norm="l2").astype("float32", copy=False),
-        "hybrid_dense_lexical": normalize(np.load("data/features/hybrid_dense_lexical.npy"), norm="l2").astype("float32", copy=False),
-        "hybrid_dense_lexical_structural": normalize(np.load("data/features/hybrid_dense_lexical_structural.npy"), norm="l2").astype("float32", copy=False),
+        "dense_bge_pca": normalize(
+            np.load("data/features/dense_bge_pca.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "tfidf_word_svd": normalize(
+            np.load("data/features/tfidf_word_svd.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "tfidf_char_svd": normalize(
+            np.load("data/features/tfidf_char_svd.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "structural_features": normalize(
+            np.load("data/features/structural_features.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "hybrid_dense_lexical": normalize(
+            np.load("data/features/hybrid_dense_lexical.npy"), norm="l2"
+        ).astype("float32", copy=False),
+        "hybrid_dense_lexical_structural": normalize(
+            np.load("data/features/hybrid_dense_lexical_structural.npy"), norm="l2"
+        ).astype("float32", copy=False),
     }
     features["_lexical"] = normalize(
         np.hstack([features["tfidf_word_svd"], features["tfidf_char_svd"]]),
@@ -78,8 +91,12 @@ def valid_search_rows(search: pd.DataFrame) -> pd.DataFrame:
     result = search.copy()
     result["balanced_score"] = pd.to_numeric(result["balanced_score"], errors="coerce")
     result["cluster_count"] = pd.to_numeric(result["cluster_count"], errors="coerce")
-    result["largest_cluster_share"] = pd.to_numeric(result["largest_cluster_share"], errors="coerce")
-    result["noise_share"] = pd.to_numeric(result.get("noise_share", 0.0), errors="coerce").fillna(0.0)
+    result["largest_cluster_share"] = pd.to_numeric(
+        result["largest_cluster_share"], errors="coerce"
+    )
+    result["noise_share"] = pd.to_numeric(
+        result.get("noise_share", 0.0), errors="coerce"
+    ).fillna(0.0)
     result = result[result["balanced_score"].notna()]
     if "error" in result.columns:
         result = result[result["error"].fillna("").astype(str).eq("")]
@@ -93,7 +110,9 @@ def valid_search_rows(search: pd.DataFrame) -> pd.DataFrame:
     return valid.sort_values("balanced_score", ascending=False).reset_index(drop=True)
 
 
-def labels_for_config(row: pd.Series, features: dict[str, np.ndarray], search_module) -> np.ndarray:
+def labels_for_config(
+    row: pd.Series, features: dict[str, np.ndarray], search_module
+) -> np.ndarray:
     values = search_module.feature_by_name(str(row["feature_set"]), features)
     params = parse_params(row.get("params", ""))
     method = str(row["method"])
@@ -105,10 +124,14 @@ def labels_for_config(row: pd.Series, features: dict[str, np.ndarray], search_mo
         return search_module.leiden_labels_from_graph(graph, resolution, seed)
     if method == "kmeans":
         n_clusters = int(float(params.get("n_clusters", row.get("n_clusters", 12))))
-        return KMeans(n_clusters=n_clusters, random_state=42, n_init=10).fit_predict(values)
+        return KMeans(n_clusters=n_clusters, random_state=42, n_init=10).fit_predict(
+            values
+        )
     if method == "agglomerative":
         n_clusters = int(float(params.get("n_clusters", row.get("n_clusters", 12))))
-        return AgglomerativeClustering(n_clusters=n_clusters, metric="cosine", linkage="average").fit_predict(values)
+        return AgglomerativeClustering(
+            n_clusters=n_clusters, metric="cosine", linkage="average"
+        ).fit_predict(values)
     if method == "hdbscan":
         min_cluster_size = int(float(params.get("min_cluster_size", 50)))
         min_samples = int(float(params.get("min_samples", 10)))
@@ -129,7 +152,15 @@ def with_preview(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def save_final_umap_html(df: pd.DataFrame) -> None:
-    hover = ["id", "year", "month", "tags_raw", "macro_tags", "cluster_final", "text_preview"]
+    hover = [
+        "id",
+        "year",
+        "month",
+        "tags_raw",
+        "macro_tags",
+        "cluster_final",
+        "text_preview",
+    ]
     data = with_preview(df)
     fig2 = px.scatter(
         data,
@@ -140,7 +171,9 @@ def save_final_umap_html(df: pd.DataFrame) -> None:
         title="UMAP 2D colored by final cluster",
     )
     fig2.update_traces(marker={"size": 6, "opacity": 0.75})
-    fig2.write_html("outputs/figures/umap2d_final.html", include_plotlyjs="cdn", full_html=True)
+    fig2.write_html(
+        "outputs/figures/umap2d_final.html", include_plotlyjs="cdn", full_html=True
+    )
     fig3 = px.scatter_3d(
         data,
         x="umap3_x",
@@ -151,7 +184,9 @@ def save_final_umap_html(df: pd.DataFrame) -> None:
         title="UMAP 3D colored by final cluster",
     )
     fig3.update_traces(marker={"size": 4, "opacity": 0.75})
-    fig3.write_html("outputs/figures/umap3d_final.html", include_plotlyjs="cdn", full_html=True)
+    fig3.write_html(
+        "outputs/figures/umap3d_final.html", include_plotlyjs="cdn", full_html=True
+    )
 
 
 def scatter_png(
@@ -167,7 +202,9 @@ def scatter_png(
     fig = plt.figure(figsize=(10, 7))
     if z:
         ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(df[x], df[y], df[z], c=codes, cmap="tab20", s=7, alpha=0.7, linewidths=0)
+        ax.scatter(
+            df[x], df[y], df[z], c=codes, cmap="tab20", s=7, alpha=0.7, linewidths=0
+        )
         ax.set_zlabel(z)
     else:
         ax = fig.add_subplot(111)
@@ -188,7 +225,9 @@ def explode_tag_counts(df: pd.DataFrame, label_col: str, tags_col: str) -> pd.Da
         for values in part[tags_col].map(parse_json_list):
             for value in values:
                 counts[value] = counts.get(value, 0) + 1
-        for tag, count in sorted(counts.items(), key=lambda item: item[1], reverse=True):
+        for tag, count in sorted(
+            counts.items(), key=lambda item: item[1], reverse=True
+        ):
             rows.append(
                 {
                     "cluster_final": cluster,
@@ -202,7 +241,11 @@ def explode_tag_counts(df: pd.DataFrame, label_col: str, tags_col: str) -> pd.Da
 
 
 def ctfidf_terms(df: pd.DataFrame, label_col: str, top_n: int = 20) -> pd.DataFrame:
-    grouped = df.groupby(label_col)["text_clean"].apply(lambda values: " ".join(values.fillna("").astype(str))).reset_index()
+    grouped = (
+        df.groupby(label_col)["text_clean"]
+        .apply(lambda values: " ".join(values.fillna("").astype(str)))
+        .reset_index()
+    )
     vectorizer = CountVectorizer(
         lowercase=True,
         min_df=2,
@@ -236,7 +279,9 @@ def ctfidf_terms(df: pd.DataFrame, label_col: str, top_n: int = 20) -> pd.DataFr
     return pd.DataFrame(rows)
 
 
-def example_tables(df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, per_cluster: int = 8) -> tuple[pd.DataFrame, pd.DataFrame]:
+def example_tables(
+    df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, per_cluster: int = 8
+) -> tuple[pd.DataFrame, pd.DataFrame]:
     clusters = sorted(pd.unique(labels))
     centroids = []
     for cluster in clusters:
@@ -254,7 +299,9 @@ def example_tables(df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, p
         border_idx = idx[np.argsort(margin)[:per_cluster]]
         for rank, row_idx in enumerate(central_idx, start=1):
             row = df.iloc[row_idx]
-            central_rows.append(example_row(row, cluster, rank, own[np.where(idx == row_idx)[0][0]]))
+            central_rows.append(
+                example_row(row, cluster, rank, own[np.where(idx == row_idx)[0][0]])
+            )
         for rank, row_idx in enumerate(border_idx, start=1):
             local = np.where(idx == row_idx)[0][0]
             row = df.iloc[row_idx]
@@ -262,7 +309,9 @@ def example_tables(df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, p
     return pd.DataFrame(central_rows), pd.DataFrame(borderline_rows)
 
 
-def example_row(row: pd.Series, cluster: object, rank: int, score: float) -> dict[str, object]:
+def example_row(
+    row: pd.Series, cluster: object, rank: int, score: float
+) -> dict[str, object]:
     return {
         "cluster_final": cluster,
         "rank": rank,
@@ -298,7 +347,9 @@ def interpretation_cards(
         top_raw = top_join(raw_counts, cluster, "tag", 5)
         central_text = ""
         central_id = ""
-        central_part = central[central["cluster_final"].astype(str) == str(cluster)].head(1)
+        central_part = central[
+            central["cluster_final"].astype(str) == str(cluster)
+        ].head(1)
         if not central_part.empty:
             central_id = str(central_part.iloc[0]["id"])
             central_text = str(central_part.iloc[0]["text_preview"])
@@ -397,7 +448,9 @@ def report_ready_summary(
         how="left",
         suffixes=("", "_structural"),
     )
-    final_excl = metrics[(metrics["model"].eq("final")) & (metrics["subset"].eq("excluding_other"))].iloc[0]
+    final_excl = metrics[
+        (metrics["model"].eq("final")) & (metrics["subset"].eq("excluding_other"))
+    ].iloc[0]
     result["final_ari_excluding_other"] = float(final_excl["ari"])
     result["final_v_measure_excluding_other"] = float(final_excl["v_measure"])
     result["final_pairwise_f1"] = float(final_excl["pairwise_f1"])
@@ -405,9 +458,17 @@ def report_ready_summary(
 
 
 def save_heatmap(macro_counts: pd.DataFrame) -> None:
-    top_tags = macro_counts.groupby("tag")["count"].sum().sort_values(ascending=False).head(18).index
+    top_tags = (
+        macro_counts.groupby("tag")["count"]
+        .sum()
+        .sort_values(ascending=False)
+        .head(18)
+        .index
+    )
     part = macro_counts[macro_counts["tag"].isin(top_tags)].copy()
-    pivot = part.pivot_table(index="cluster_final", columns="tag", values="share_of_cluster", fill_value=0.0)
+    pivot = part.pivot_table(
+        index="cluster_final", columns="tag", values="share_of_cluster", fill_value=0.0
+    )
     fig, ax = plt.subplots(figsize=(13, max(6, len(pivot) * 0.35)))
     im = ax.imshow(pivot.to_numpy(), aspect="auto", cmap="viridis")
     ax.set_xticks(range(len(pivot.columns)))
@@ -422,7 +483,11 @@ def save_heatmap(macro_counts: pd.DataFrame) -> None:
 
 
 def save_metrics_plot(before_after: pd.DataFrame) -> None:
-    rows = before_after[before_after["metric"].isin(["ari_excluding_other", "v_measure_excluding_other", "pairwise_f1_all"])]
+    rows = before_after[
+        before_after["metric"].isin(
+            ["ari_excluding_other", "v_measure_excluding_other", "pairwise_f1_all"]
+        )
+    ]
     labels = rows["metric"].tolist()
     old_values = rows["old_leiden"].astype(float).tolist()
     final_values = rows["final"].astype(float).tolist()
@@ -442,7 +507,13 @@ def save_metrics_plot(before_after: pd.DataFrame) -> None:
 
 def save_search_plot(search: pd.DataFrame) -> None:
     top = search.sort_values("balanced_score", ascending=False).head(25).copy()
-    top["label"] = top["method"].astype(str) + " / " + top["feature_set"].astype(str).str[:32] + " / " + top["params"].astype(str).str[:28]
+    top["label"] = (
+        top["method"].astype(str)
+        + " / "
+        + top["feature_set"].astype(str).str[:32]
+        + " / "
+        + top["params"].astype(str).str[:28]
+    )
     fig, ax = plt.subplots(figsize=(12, 8))
     ax.barh(np.arange(len(top)), top["balanced_score"].astype(float), color="#4477aa")
     ax.set_yticks(np.arange(len(top)))
@@ -493,12 +564,16 @@ def write_final_reports(
         "## Best raw score vs final choice",
         "",
         "The best raw balanced-score configuration may differ from the final choice because the final choice enforces the requested interpretable 8-25 cluster range.",
-        pd.DataFrame([best_raw.to_dict(), final_row.to_dict()]).to_markdown(index=False),
+        pd.DataFrame([best_raw.to_dict(), final_row.to_dict()]).to_markdown(
+            index=False
+        ),
         "",
         "## Search note",
         f"Search rows evaluated: {len(search)}.",
     ]
-    Path("outputs/report_notes/10_final_clustering_selection.md").write_text("\n".join(selection_lines), encoding="utf-8")
+    Path("outputs/report_notes/10_final_clustering_selection.md").write_text(
+        "\n".join(selection_lines), encoding="utf-8"
+    )
 
     interpretation_lines = [
         "# Final cluster interpretation",
@@ -509,17 +584,23 @@ def write_final_reports(
         "## Cluster cards",
         cards.to_markdown(index=False),
     ]
-    Path("outputs/report_notes/11_cluster_interpretation.md").write_text("\n".join(interpretation_lines), encoding="utf-8")
+    Path("outputs/report_notes/11_cluster_interpretation.md").write_text(
+        "\n".join(interpretation_lines), encoding="utf-8"
+    )
 
 
-def write_executed_notebook(df: pd.DataFrame, final_selection: pd.DataFrame, metrics: pd.DataFrame) -> None:
+def write_executed_notebook(
+    df: pd.DataFrame, final_selection: pd.DataFrame, metrics: pd.DataFrame
+) -> None:
     import nbformat
     from nbclient import NotebookClient
 
     Path("notebooks").mkdir(parents=True, exist_ok=True)
     nb = nbformat.v4.new_notebook()
     nb.cells = [
-        nbformat.v4.new_markdown_cell("# Tagged corpus final clustering run\n\nExecuted artifact for the thesis pipeline."),
+        nbformat.v4.new_markdown_cell(
+            "# Tagged corpus final clustering run\n\nExecuted artifact for the thesis pipeline."
+        ),
         nbformat.v4.new_code_cell(
             "\n".join(
                 [
@@ -583,29 +664,44 @@ def write_executed_notebook(df: pd.DataFrame, final_selection: pd.DataFrame, met
             )
         ),
     ]
-    selection_dict = final_selection.iloc[0].to_dict() if not final_selection.empty else {}
-    nb.metadata["execution_note"] = json.loads(json.dumps(
-        {
-            "created_at": datetime.now().isoformat(timespec="seconds"),
-            "rows": int(len(df)),
-            "final_selection": selection_dict,
-            "environment": "local nbclient execution summary",
-        },
-        default=str,
-    ))
-    client = NotebookClient(nb, timeout=900, kernel_name="python3", resources={"metadata": {"path": "."}})
+    selection_dict = (
+        final_selection.iloc[0].to_dict() if not final_selection.empty else {}
+    )
+    nb.metadata["execution_note"] = json.loads(
+        json.dumps(
+            {
+                "created_at": datetime.now().isoformat(timespec="seconds"),
+                "rows": int(len(df)),
+                "final_selection": selection_dict,
+                "environment": "local nbclient execution summary",
+            },
+            default=str,
+        )
+    )
+    client = NotebookClient(
+        nb, timeout=900, kernel_name="python3", resources={"metadata": {"path": "."}}
+    )
     client.execute()
     nbformat.write(nb, "notebooks/tagged_corpus_analysis_execution_summary.ipynb")
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", default="data/processed/anekdots_tagged_clustered.csv")
-    parser.add_argument("--search", default="outputs/tables/clustering_search_all_runs.csv")
+    parser.add_argument(
+        "--dataset", default="data/processed/anekdots_tagged_clustered.csv"
+    )
+    parser.add_argument(
+        "--search", default="outputs/tables/clustering_search_all_runs.csv"
+    )
     parser.add_argument("--write-notebook", action="store_true")
     args = parser.parse_args()
 
-    for folder in ["outputs/tables", "outputs/figures", "outputs/report_notes", "notebooks"]:
+    for folder in [
+        "outputs/tables",
+        "outputs/figures",
+        "outputs/report_notes",
+        "notebooks",
+    ]:
         Path(folder).mkdir(parents=True, exist_ok=True)
 
     df = pd.read_csv(args.dataset)
@@ -640,10 +736,20 @@ def main() -> int:
         df[column] = labels_for_config(row, features, search_module)
         chosen_by_method[column] = row
 
-    df.to_csv(args.dataset, index=False, encoding="utf-8")
+    df.to_csv(args.dataset, index=False, encoding="utf-8", lineterminator="\n")
 
     metric_frames = []
-    label_configs = [("old_leiden", df["cluster_old_leiden"].to_numpy(), {"method": "leiden", "feature_set": "dense_bge_pca", "params": "k=30;resolution=1.0;seed=42"})]
+    label_configs = [
+        (
+            "old_leiden",
+            df["cluster_old_leiden"].to_numpy(),
+            {
+                "method": "leiden",
+                "feature_set": "dense_bge_pca",
+                "params": "k=30;resolution=1.0;seed=42",
+            },
+        )
+    ]
     for column, row in chosen_by_method.items():
         label_configs.append((column, df[column].to_numpy(), row.to_dict()))
     label_configs.append(("final", df["cluster_final"].to_numpy(), final_row.to_dict()))
@@ -655,10 +761,19 @@ def main() -> int:
         suite.insert(3, "params", config.get("params", ""))
         metric_frames.append(suite)
     metrics = pd.concat(metric_frames, ignore_index=True)
-    metrics.to_csv("outputs/tables/final_metrics_summary.csv", index=False, encoding="utf-8")
+    metrics.to_csv(
+        "outputs/tables/final_metrics_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
-    final_excl = metrics[(metrics["model"].eq("final")) & (metrics["subset"].eq("excluding_other"))].iloc[0]
-    old_excl = metrics[(metrics["model"].eq("old_leiden")) & (metrics["subset"].eq("excluding_other"))].iloc[0]
+    final_excl = metrics[
+        (metrics["model"].eq("final")) & (metrics["subset"].eq("excluding_other"))
+    ].iloc[0]
+    old_excl = metrics[
+        (metrics["model"].eq("old_leiden")) & (metrics["subset"].eq("excluding_other"))
+    ].iloc[0]
     before_after = pd.DataFrame(
         [
             {
@@ -667,55 +782,178 @@ def main() -> int:
                 "final": float(final_excl[metric]),
                 "delta": float(final_excl[metric] - old_excl[metric]),
             }
-            for metric in ["ari", "ami", "v_measure", "pairwise_f1", "pairwise_precision", "pairwise_recall", "largest_cluster_share"]
+            for metric in [
+                "ari",
+                "ami",
+                "v_measure",
+                "pairwise_f1",
+                "pairwise_precision",
+                "pairwise_recall",
+                "largest_cluster_share",
+            ]
         ]
     ).rename(columns={"ari": "ari_excluding_other"})
     before_after.loc[before_after["metric"].eq("ari"), "metric"] = "ari_excluding_other"
-    before_after.loc[before_after["metric"].eq("v_measure"), "metric"] = "v_measure_excluding_other"
-    before_after.loc[before_after["metric"].eq("pairwise_f1"), "metric"] = "pairwise_f1_all"
-    before_after.to_csv("outputs/tables/metrics_before_after.csv", index=False, encoding="utf-8")
+    before_after.loc[before_after["metric"].eq("v_measure"), "metric"] = (
+        "v_measure_excluding_other"
+    )
+    before_after.loc[before_after["metric"].eq("pairwise_f1"), "metric"] = (
+        "pairwise_f1_all"
+    )
+    before_after.to_csv(
+        "outputs/tables/metrics_before_after.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     final_selection = pd.DataFrame([final_row.to_dict()])
     final_selection["final_rows"] = len(df)
     final_selection["final_cluster_count"] = int(pd.Series(final_labels).nunique())
-    final_selection["final_largest_cluster_share"] = float(pd.Series(final_labels).value_counts(normalize=True).max())
-    final_selection["delta_ari_vs_old_leiden"] = float(final_excl["ari"] - old_excl["ari"])
-    final_selection["delta_v_measure_vs_old_leiden"] = float(final_excl["v_measure"] - old_excl["v_measure"])
-    final_selection["delta_pairwise_f1_vs_old_leiden"] = float(final_excl["pairwise_f1"] - old_excl["pairwise_f1"])
-    final_selection.to_csv("outputs/tables/final_clustering_selection.csv", index=False, encoding="utf-8")
+    final_selection["final_largest_cluster_share"] = float(
+        pd.Series(final_labels).value_counts(normalize=True).max()
+    )
+    final_selection["delta_ari_vs_old_leiden"] = float(
+        final_excl["ari"] - old_excl["ari"]
+    )
+    final_selection["delta_v_measure_vs_old_leiden"] = float(
+        final_excl["v_measure"] - old_excl["v_measure"]
+    )
+    final_selection["delta_pairwise_f1_vs_old_leiden"] = float(
+        final_excl["pairwise_f1"] - old_excl["pairwise_f1"]
+    )
+    final_selection.to_csv(
+        "outputs/tables/final_clustering_selection.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
-    cluster_sizes = df["cluster_final"].value_counts().rename_axis("cluster_final").reset_index(name="size")
+    cluster_sizes = (
+        df["cluster_final"]
+        .value_counts()
+        .rename_axis("cluster_final")
+        .reset_index(name="size")
+    )
     cluster_sizes["share"] = cluster_sizes["size"] / len(df)
-    cluster_sizes.to_csv("outputs/tables/cluster_final_sizes.csv", index=False, encoding="utf-8")
+    cluster_sizes.to_csv(
+        "outputs/tables/cluster_final_sizes.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     macro_counts = explode_tag_counts(df, "cluster_final", "macro_tags")
     raw_counts = explode_tag_counts(df, "cluster_final", "tags_raw")
-    macro_counts.to_csv("outputs/tables/cluster_final_macro_tag_matrix.csv", index=False, encoding="utf-8")
-    raw_counts.to_csv("outputs/tables/cluster_final_raw_tag_matrix.csv", index=False, encoding="utf-8")
+    macro_counts.to_csv(
+        "outputs/tables/cluster_final_macro_tag_matrix.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    raw_counts.to_csv(
+        "outputs/tables/cluster_final_raw_tag_matrix.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     terms = ctfidf_terms(df, "cluster_final")
-    terms.to_csv("outputs/tables/cluster_final_ctfidf_terms.csv", index=False, encoding="utf-8")
-    terms.to_csv("outputs/tables/cluster_ctfidf_terms.csv", index=False, encoding="utf-8")
+    terms.to_csv(
+        "outputs/tables/cluster_final_ctfidf_terms.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    terms.to_csv(
+        "outputs/tables/cluster_ctfidf_terms.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     central, borderline = example_tables(df, final_labels, final_values)
-    central.to_csv("outputs/tables/cluster_final_central_examples.csv", index=False, encoding="utf-8")
-    borderline.to_csv("outputs/tables/cluster_final_borderline_examples.csv", index=False, encoding="utf-8")
+    central.to_csv(
+        "outputs/tables/cluster_final_central_examples.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    borderline.to_csv(
+        "outputs/tables/cluster_final_borderline_examples.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     cards = interpretation_cards(df, macro_counts, raw_counts, terms, central)
-    cards.to_csv("outputs/tables/cluster_final_interpretation_cards.csv", index=False, encoding="utf-8")
-    cards.to_csv("outputs/tables/cluster_interpretation_cards.csv", index=False, encoding="utf-8")
+    cards.to_csv(
+        "outputs/tables/cluster_final_interpretation_cards.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    cards.to_csv(
+        "outputs/tables/cluster_interpretation_cards.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     entropy = cluster_entropy(df)
     years = yearly_distribution(df)
     structural = structural_summary(df)
     summary = report_ready_summary(cards, entropy, structural, metrics)
-    entropy.to_csv("outputs/tables/cluster_entropy.csv", index=False, encoding="utf-8")
-    years.to_csv("outputs/tables/cluster_yearly_distribution.csv", index=False, encoding="utf-8")
-    structural.to_csv("outputs/tables/cluster_structural_summary.csv", index=False, encoding="utf-8")
-    summary.to_csv("outputs/tables/cluster_report_ready_summary.csv", index=False, encoding="utf-8")
+    entropy.to_csv(
+        "outputs/tables/cluster_entropy.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    years.to_csv(
+        "outputs/tables/cluster_yearly_distribution.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    structural.to_csv(
+        "outputs/tables/cluster_structural_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    summary.to_csv(
+        "outputs/tables/cluster_report_ready_summary.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
     save_final_umap_html(df)
-    scatter_png(df, "umap2_x", "umap2_y", "cluster_final", "outputs/figures/umap2d_final.png", "UMAP 2D colored by final cluster")
-    scatter_png(df, "umap3_x", "umap3_y", "cluster_final", "outputs/figures/umap3d_final.png", "UMAP 3D colored by final cluster", z="umap3_z")
+    scatter_png(
+        df,
+        "umap2_x",
+        "umap2_y",
+        "cluster_final",
+        "outputs/figures/umap2d_final.png",
+        "UMAP 2D colored by final cluster",
+    )
+    scatter_png(
+        df,
+        "umap3_x",
+        "umap3_y",
+        "cluster_final",
+        "outputs/figures/umap3d_final.png",
+        "UMAP 3D colored by final cluster",
+        z="umap3_z",
+    )
     pca = np.load("data/embeddings/tagged_pca128.npy")
     pca_df = df.copy()
     pca_df["pca_x"], pca_df["pca_y"], pca_df["pca_z"] = pca[:, 0], pca[:, 1], pca[:, 2]
-    scatter_png(pca_df, "pca_x", "pca_y", "cluster_old_leiden", "outputs/figures/pca3d_baseline.png", "PCA 3D baseline colored by old Leiden", z="pca_z")
+    scatter_png(
+        pca_df,
+        "pca_x",
+        "pca_y",
+        "cluster_old_leiden",
+        "outputs/figures/pca3d_baseline.png",
+        "PCA 3D baseline colored by old Leiden",
+        z="pca_z",
+    )
     save_heatmap(macro_counts)
     save_metrics_plot(before_after)
     save_search_plot(search)

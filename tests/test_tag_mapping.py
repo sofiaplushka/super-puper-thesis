@@ -16,4 +16,3 @@ def test_map_tags_keeps_mapping_order():
     mapping = {"a": ["x"], "b": ["y"]}
     macros, _ = map_tags(["y", "x"], mapping)
     assert macros == ["a", "b"]
-

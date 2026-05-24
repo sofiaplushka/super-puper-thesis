@@ -9,7 +9,11 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import calinski_harabasz_score, davies_bouldin_score, silhouette_score
+from sklearn.metrics import (
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 
 from thesis_pipeline.clustering import build_knn_graph, load_feature_matrix
 from thesis_pipeline.strong_metrics import (
@@ -29,7 +33,9 @@ def append_progress(message: str) -> None:
         f.write(f"- {datetime.now().isoformat(timespec='seconds')}: {message}\n")
 
 
-def internal_rows(features: np.ndarray, labels: np.ndarray, seed: int, k: int) -> pd.DataFrame:
+def internal_rows(
+    features: np.ndarray, labels: np.ndarray, seed: int, k: int
+) -> pd.DataFrame:
     rows = []
     if len(np.unique(labels)) >= 2:
         sample_size = min(3000, len(features))
@@ -42,37 +48,74 @@ def internal_rows(features: np.ndarray, labels: np.ndarray, seed: int, k: int) -
                             features,
                             labels,
                             metric="cosine",
-                            sample_size=sample_size if sample_size < len(features) else None,
+                            sample_size=(
+                                sample_size if sample_size < len(features) else None
+                            ),
                             random_state=seed,
                         )
                     ),
                     "space": "embedding_or_pca",
                 },
-                {"metric": "calinski_harabasz", "value": float(calinski_harabasz_score(features, labels)), "space": "pca"},
-                {"metric": "davies_bouldin", "value": float(davies_bouldin_score(features, labels)), "space": "pca"},
+                {
+                    "metric": "calinski_harabasz",
+                    "value": float(calinski_harabasz_score(features, labels)),
+                    "space": "pca",
+                },
+                {
+                    "metric": "davies_bouldin",
+                    "value": float(davies_bouldin_score(features, labels)),
+                    "space": "pca",
+                },
             ]
         )
     try:
         graph = build_knn_graph(features, k)
-        rows.append({"metric": "modularity", "value": float(graph.modularity(labels.tolist(), weights=graph.es["weight"])), "space": "knn_graph"})
+        rows.append(
+            {
+                "metric": "modularity",
+                "value": float(
+                    graph.modularity(labels.tolist(), weights=graph.es["weight"])
+                ),
+                "space": "knn_graph",
+            }
+        )
     except Exception as exc:
-        rows.append({"metric": "modularity", "value": None, "space": "knn_graph", "reason": f"{type(exc).__name__}: {exc}"})
+        rows.append(
+            {
+                "metric": "modularity",
+                "value": None,
+                "space": "knn_graph",
+                "reason": f"{type(exc).__name__}: {exc}",
+            }
+        )
     counts = pd.Series(labels).value_counts(normalize=True)
     rows.extend(
         [
-            {"metric": "cluster_count", "value": int(len(np.unique(labels))), "space": "labels"},
-            {"metric": "largest_cluster_share", "value": float(counts.max()), "space": "labels"},
+            {
+                "metric": "cluster_count",
+                "value": int(len(np.unique(labels))),
+                "space": "labels",
+            },
+            {
+                "metric": "largest_cluster_share",
+                "value": float(counts.max()),
+                "space": "labels",
+            },
         ]
     )
     return pd.DataFrame(rows)
 
 
-def write_metric_tables(df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, args) -> dict[str, pd.DataFrame]:
+def write_metric_tables(
+    df: pd.DataFrame, labels: np.ndarray, features: np.ndarray, args
+) -> dict[str, pd.DataFrame]:
     masks = {
         "all": np.ones(len(df), dtype=bool),
         "excluding_other": mask_excluding_other(df),
         "single_clear_label": mask_single_clear_label(df),
-        "multi_label": df["macro_tags"].map(lambda x: len(macro_sets([x])[0]) > 1).to_numpy(),
+        "multi_label": df["macro_tags"]
+        .map(lambda x: len(macro_sets([x])[0]) > 1)
+        .to_numpy(),
     }
     tables = {}
     for subset, mask in masks.items():
@@ -80,22 +123,58 @@ def write_metric_tables(df: pd.DataFrame, labels: np.ndarray, features: np.ndarr
         table = pd.DataFrame([row])
         tables[subset] = table
         name = "metrics_multi_label" if subset == "multi_label" else f"metrics_{subset}"
-        table.to_csv(f"outputs/tables/{name}.csv", index=False, encoding="utf-8")
+        table.to_csv(
+            f"outputs/tables/{name}.csv",
+            index=False,
+            encoding="utf-8",
+            lineterminator="\n",
+        )
     pairwise = exact_pairwise_multilabel(labels, macro_sets(df["macro_tags"]))
     pairwise_df = pd.DataFrame([pairwise.__dict__ | {"exact": True}])
-    pairwise_df.to_csv("outputs/tables/pairwise_multilabel_metrics_exact.csv", index=False, encoding="utf-8")
-    pairwise_df.to_csv("outputs/tables/pairwise_multilabel_metrics.csv", index=False, encoding="utf-8")
+    pairwise_df.to_csv(
+        "outputs/tables/pairwise_multilabel_metrics_exact.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
+    pairwise_df.to_csv(
+        "outputs/tables/pairwise_multilabel_metrics.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     internal = internal_rows(features, labels, args.seed, args.k)
-    internal.to_csv("outputs/tables/internal_cluster_metrics.csv", index=False, encoding="utf-8")
+    internal.to_csv(
+        "outputs/tables/internal_cluster_metrics.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
     # Backward-compatible legacy metric files.
     single_mask = masks["single_clear_label"]
-    single_ext = external_metrics(primary_labels(df.loc[single_mask, "macro_tags"]), labels[single_mask])
+    single_ext = external_metrics(
+        primary_labels(df.loc[single_mask, "macro_tags"]), labels[single_mask]
+    )
     pd.DataFrame([single_ext | {"rows": int(single_mask.sum())}]).to_csv(
-        "outputs/tables/external_metrics_single_label.csv", index=False, encoding="utf-8"
+        "outputs/tables/external_metrics_single_label.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
     )
     all_ext = external_metrics(primary_labels(df["macro_tags"]), labels)
-    pd.DataFrame([all_ext | {"rows": int(len(df)), "label_source": "primary_macro_tag_all_rows_after_remap"}]).to_csv(
-        "outputs/tables/external_metrics_primary_macro.csv", index=False, encoding="utf-8"
+    pd.DataFrame(
+        [
+            all_ext
+            | {
+                "rows": int(len(df)),
+                "label_source": "primary_macro_tag_all_rows_after_remap",
+            }
+        ]
+    ).to_csv(
+        "outputs/tables/external_metrics_primary_macro.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
     )
     return tables | {"pairwise": pairwise_df, "internal": internal}
 
@@ -111,9 +190,13 @@ def write_before_after(tables: dict[str, pd.DataFrame]) -> None:
     current = {
         "single_clear_ari": float(tables["single_clear_label"]["ari"].iloc[0]),
         "single_clear_ami": float(tables["single_clear_label"]["ami"].iloc[0]),
-        "single_clear_v_measure": float(tables["single_clear_label"]["v_measure"].iloc[0]),
+        "single_clear_v_measure": float(
+            tables["single_clear_label"]["v_measure"].iloc[0]
+        ),
         "excluding_other_ari": float(tables["excluding_other"]["ari"].iloc[0]),
-        "excluding_other_v_measure": float(tables["excluding_other"]["v_measure"].iloc[0]),
+        "excluding_other_v_measure": float(
+            tables["excluding_other"]["v_measure"].iloc[0]
+        ),
         "pairwise_f1_exact": float(tables["pairwise"]["f1"].iloc[0]),
         "other_occurrences": 0.0,
     }
@@ -126,11 +209,24 @@ def write_before_after(tables: dict[str, pd.DataFrame]) -> None:
                 "metric": metric,
                 "before_baseline": before,
                 "after_current": after,
-                "delta": (after - before) if before is not None and after is not None else None,
-                "note": "baseline pairwise was sampled" if metric == "pairwise_f1_sampled" else "",
+                "delta": (
+                    (after - before)
+                    if before is not None and after is not None
+                    else None
+                ),
+                "note": (
+                    "baseline pairwise was sampled"
+                    if metric == "pairwise_f1_sampled"
+                    else ""
+                ),
             }
         )
-    pd.DataFrame(rows).to_csv("outputs/tables/metrics_before_after.csv", index=False, encoding="utf-8")
+    pd.DataFrame(rows).to_csv(
+        "outputs/tables/metrics_before_after.csv",
+        index=False,
+        encoding="utf-8",
+        lineterminator="\n",
+    )
 
 
 def write_report(tables: dict[str, pd.DataFrame], labels_col: str) -> None:
@@ -158,12 +254,16 @@ def write_report(tables: dict[str, pd.DataFrame], labels_col: str) -> None:
         "The current improvement at this checkpoint is mostly due to semantic macro-tag remapping, not",
         "changed clustering. Feature ablations and clustering search are run in later phases.",
     ]
-    Path("outputs/report_notes/07_validation_metrics_exact.md").write_text("\n".join(lines), encoding="utf-8")
+    Path("outputs/report_notes/07_validation_metrics_exact.md").write_text(
+        "\n".join(lines), encoding="utf-8"
+    )
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--clustered", default="data/processed/anekdots_tagged_clustered.csv")
+    parser.add_argument(
+        "--clustered", default="data/processed/anekdots_tagged_clustered.csv"
+    )
     parser.add_argument("--embeddings", default="data/embeddings/tagged_bge_m3.npy")
     parser.add_argument("--pca", default="data/embeddings/tagged_pca128.npy")
     parser.add_argument("--label-column", default="cluster_leiden")
@@ -190,4 +290,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
 REQUIRED_OUTPUTS = [
     "outputs/tables/final_clustering_selection.csv",
     "outputs/tables/final_metrics_summary.csv",
@@ -48,7 +47,9 @@ def test_final_dataset_schema_and_cluster_constraints():
     assert 8 <= df["cluster_final"].nunique() <= 25
     assert df["cluster_final"].value_counts(normalize=True).max() <= 0.40
     names = pd.read_csv("outputs/tables/cluster_interpretation_cards.csv")
-    assert not names["suggested_name"].astype(str).str.fullmatch("other", case=False).any()
+    assert (
+        not names["suggested_name"].astype(str).str.fullmatch("other", case=False).any()
+    )
 
 
 def test_feature_files_are_text_derived_and_row_aligned():
@@ -65,14 +66,25 @@ def test_feature_files_are_text_derived_and_row_aligned():
         values = np.load(path)
         assert values.shape[0] == len(df), path
 
-    source = Path("scripts/08_feature_ablation_and_search.py").read_text(encoding="utf-8")
+    source = Path("scripts/08_feature_ablation_and_search.py").read_text(
+        encoding="utf-8"
+    )
     body = source.split("def save_features", 1)[1].split("def balanced_score", 1)[0]
-    forbidden_label_columns = ["tags_raw", "tags_norm", "macro_tags", "primary_macro_tag", "cluster_leiden", "cluster_final"]
+    forbidden_label_columns = [
+        "tags_raw",
+        "tags_norm",
+        "macro_tags",
+        "primary_macro_tag",
+        "cluster_leiden",
+        "cluster_final",
+    ]
     assert not any(column in body for column in forbidden_label_columns)
 
 
 def test_executed_notebook_contains_required_outputs():
-    text = Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb").read_text(encoding="utf-8")
+    text = Path("notebooks/tagged_corpus_analysis_execution_summary.ipynb").read_text(
+        encoding="utf-8"
+    )
     required_fragments = [
         "Python:",
         "Torch:",
