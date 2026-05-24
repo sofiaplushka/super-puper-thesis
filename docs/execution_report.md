@@ -169,6 +169,9 @@ Generated:
 - `outputs/tables/clustering_search_all_runs.csv`
 - `outputs/tables/final_clustering_selection.csv`
 - `outputs/tables/final_metrics_summary.csv`
+- `outputs/tables/cluster_ctfidf_terms.csv`
+- `outputs/tables/cluster_interpretation_cards.csv`
+- `outputs/tables/cluster_report_ready_summary.csv`
 - `outputs/tables/cluster_final_interpretation_cards.csv`
 - `outputs/figures/umap2d_final.html`
 - `outputs/figures/umap3d_final.html`

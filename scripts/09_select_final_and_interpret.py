@@ -320,6 +320,90 @@ def interpretation_cards(
     return pd.DataFrame(rows).sort_values("size", ascending=False)
 
 
+def cluster_entropy(df: pd.DataFrame, label_col: str = "cluster_final") -> pd.DataFrame:
+    rows = []
+    for cluster, part in df.groupby(label_col):
+        macro_counts: dict[str, int] = {}
+        raw_counts: dict[str, int] = {}
+        for values in part["macro_tags"].map(parse_json_list):
+            for value in values:
+                macro_counts[value] = macro_counts.get(value, 0) + 1
+        for values in part["tags_raw"].map(parse_json_list):
+            for value in values:
+                raw_counts[value] = raw_counts.get(value, 0) + 1
+        rows.append(
+            {
+                "cluster_final": cluster,
+                "macro_tag_entropy": entropy_from_counts(macro_counts.values()),
+                "raw_tag_entropy": entropy_from_counts(raw_counts.values()),
+                "macro_tag_unique": len(macro_counts),
+                "raw_tag_unique": len(raw_counts),
+            }
+        )
+    return pd.DataFrame(rows).sort_values("cluster_final")
+
+
+def entropy_from_counts(counts: Iterable[int]) -> float:
+    values = np.asarray(list(counts), dtype=float)
+    if not len(values) or values.sum() == 0:
+        return 0.0
+    shares = values / values.sum()
+    return float(-(shares * np.log2(shares)).sum())
+
+
+def yearly_distribution(df: pd.DataFrame) -> pd.DataFrame:
+    result = df.groupby(["cluster_final", "year"], as_index=False).size()
+    totals = df.groupby("cluster_final").size().rename("cluster_size").reset_index()
+    result = result.merge(totals, on="cluster_final", how="left")
+    result["share_of_cluster"] = result["size"] / result["cluster_size"]
+    return result.sort_values(["cluster_final", "year"])
+
+
+def structural_summary(df: pd.DataFrame) -> pd.DataFrame:
+    result = (
+        df.groupby("cluster_final")
+        .agg(
+            rows=("id", "size"),
+            text_length_chars_mean=("text_length_chars", "mean"),
+            text_length_chars_median=("text_length_chars", "median"),
+            text_length_words_mean=("text_length_words", "mean"),
+            text_length_words_median=("text_length_words", "median"),
+            year_min=("year", "min"),
+            year_max=("year", "max"),
+        )
+        .reset_index()
+    )
+    result["share"] = result["rows"] / len(df)
+    return result.sort_values("rows", ascending=False)
+
+
+def report_ready_summary(
+    cards: pd.DataFrame,
+    entropy: pd.DataFrame,
+    structural: pd.DataFrame,
+    metrics: pd.DataFrame,
+) -> pd.DataFrame:
+    result = cards.merge(entropy, on="cluster_final", how="left").merge(
+        structural[
+            [
+                "cluster_final",
+                "text_length_chars_mean",
+                "text_length_words_mean",
+                "year_min",
+                "year_max",
+            ]
+        ],
+        on="cluster_final",
+        how="left",
+        suffixes=("", "_structural"),
+    )
+    final_excl = metrics[(metrics["model"].eq("final")) & (metrics["subset"].eq("excluding_other"))].iloc[0]
+    result["final_ari_excluding_other"] = float(final_excl["ari"])
+    result["final_v_measure_excluding_other"] = float(final_excl["v_measure"])
+    result["final_pairwise_f1"] = float(final_excl["pairwise_f1"])
+    return result.sort_values("size", ascending=False)
+
+
 def save_heatmap(macro_counts: pd.DataFrame) -> None:
     top_tags = macro_counts.groupby("tag")["count"].sum().sort_values(ascending=False).head(18).index
     part = macro_counts[macro_counts["tag"].isin(top_tags)].copy()
@@ -390,6 +474,7 @@ def write_final_reports(
     cards: pd.DataFrame,
     search: pd.DataFrame,
 ) -> None:
+    best_raw = search.sort_values("balanced_score", ascending=False).iloc[0]
     selection_lines = [
         "# Final clustering selection",
         "",
@@ -404,6 +489,11 @@ def write_final_reports(
         "",
         "## Full metric suite",
         metrics.to_markdown(index=False),
+        "",
+        "## Best raw score vs final choice",
+        "",
+        "The best raw balanced-score configuration may differ from the final choice because the final choice enforces the requested interpretable 8-25 cluster range.",
+        pd.DataFrame([best_raw.to_dict(), final_row.to_dict()]).to_markdown(index=False),
         "",
         "## Search note",
         f"Search rows evaluated: {len(search)}.",
@@ -511,6 +601,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", default="data/processed/anekdots_tagged_clustered.csv")
     parser.add_argument("--search", default="outputs/tables/clustering_search_all_runs.csv")
+    parser.add_argument("--skip-notebook", action="store_true")
     args = parser.parse_args()
 
     for folder in ["outputs/tables", "outputs/figures", "outputs/report_notes", "notebooks"]:
@@ -601,11 +692,21 @@ def main() -> int:
     raw_counts.to_csv("outputs/tables/cluster_final_raw_tag_matrix.csv", index=False, encoding="utf-8")
     terms = ctfidf_terms(df, "cluster_final")
     terms.to_csv("outputs/tables/cluster_final_ctfidf_terms.csv", index=False, encoding="utf-8")
+    terms.to_csv("outputs/tables/cluster_ctfidf_terms.csv", index=False, encoding="utf-8")
     central, borderline = example_tables(df, final_labels, final_values)
     central.to_csv("outputs/tables/cluster_final_central_examples.csv", index=False, encoding="utf-8")
     borderline.to_csv("outputs/tables/cluster_final_borderline_examples.csv", index=False, encoding="utf-8")
     cards = interpretation_cards(df, macro_counts, raw_counts, terms, central)
     cards.to_csv("outputs/tables/cluster_final_interpretation_cards.csv", index=False, encoding="utf-8")
+    cards.to_csv("outputs/tables/cluster_interpretation_cards.csv", index=False, encoding="utf-8")
+    entropy = cluster_entropy(df)
+    years = yearly_distribution(df)
+    structural = structural_summary(df)
+    summary = report_ready_summary(cards, entropy, structural, metrics)
+    entropy.to_csv("outputs/tables/cluster_entropy.csv", index=False, encoding="utf-8")
+    years.to_csv("outputs/tables/cluster_yearly_distribution.csv", index=False, encoding="utf-8")
+    structural.to_csv("outputs/tables/cluster_structural_summary.csv", index=False, encoding="utf-8")
+    summary.to_csv("outputs/tables/cluster_report_ready_summary.csv", index=False, encoding="utf-8")
 
     save_final_umap_html(df)
     scatter_png(df, "umap2_x", "umap2_y", "cluster_final", "outputs/figures/umap2d_final.png", "UMAP 2D colored by final cluster")
@@ -619,7 +720,8 @@ def main() -> int:
     save_search_plot(search)
     save_year_coverage(df)
     write_final_reports(final_row, before_after, metrics, cards, search)
-    write_executed_notebook(df, final_selection, metrics)
+    if not args.skip_notebook:
+        write_executed_notebook(df, final_selection, metrics)
 
     append_progress(
         "Phase 6-8 final selection complete: "

@@ -7,6 +7,12 @@ import pandas as pd
 REQUIRED_OUTPUTS = [
     "outputs/tables/final_clustering_selection.csv",
     "outputs/tables/final_metrics_summary.csv",
+    "outputs/tables/cluster_ctfidf_terms.csv",
+    "outputs/tables/cluster_interpretation_cards.csv",
+    "outputs/tables/cluster_report_ready_summary.csv",
+    "outputs/tables/cluster_entropy.csv",
+    "outputs/tables/cluster_yearly_distribution.csv",
+    "outputs/tables/cluster_structural_summary.csv",
     "outputs/tables/cluster_final_interpretation_cards.csv",
     "outputs/tables/cluster_final_ctfidf_terms.csv",
     "outputs/figures/umap2d_final.html",
@@ -40,6 +46,8 @@ def test_final_dataset_schema_and_cluster_constraints():
     assert len(df) == 5509
     assert 8 <= df["cluster_final"].nunique() <= 25
     assert df["cluster_final"].value_counts(normalize=True).max() <= 0.40
+    names = pd.read_csv("outputs/tables/cluster_interpretation_cards.csv")
+    assert not names["suggested_name"].astype(str).str.fullmatch("other", case=False).any()
 
 
 def test_feature_files_are_text_derived_and_row_aligned():
@@ -60,3 +68,19 @@ def test_feature_files_are_text_derived_and_row_aligned():
     body = source.split("def save_features", 1)[1].split("def balanced_score", 1)[0]
     forbidden_label_columns = ["tags_raw", "tags_norm", "macro_tags", "primary_macro_tag", "cluster_leiden", "cluster_final"]
     assert not any(column in body for column in forbidden_label_columns)
+
+
+def test_executed_notebook_contains_required_outputs():
+    text = Path("notebooks/tagged_corpus_analysis_executed_colab.ipynb").read_text(encoding="utf-8")
+    required_fragments = [
+        "Python:",
+        "Torch:",
+        "CUDA available:",
+        "GPU:",
+        "Git commit:",
+        "final_cluster_count",
+        "hybrid_dense_lexical_dw0.75_lw0.25",
+        "generated_artifacts",
+    ]
+    missing = [fragment for fragment in required_fragments if fragment not in text]
+    assert missing == []

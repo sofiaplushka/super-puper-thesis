@@ -5,3 +5,4 @@
 - 2026-05-24T18:21:25: Phase 4 feature ablation complete: best=hybrid_dense_lexical_structural_dw1.0_lw0.25_sw0.1 score=0.195.
 - 2026-05-24T18:49:26: Phase 5 clustering search complete: best=leiden hybrid_dense_lexical_dw0.75_lw0.25 score=0.328, ARI_ex_other=0.275, V=0.410, F1=0.318.
 - 2026-05-24T18:51:05: Phase 6-8 final selection complete: method=leiden, feature=hybrid_dense_lexical_dw0.75_lw0.25, clusters=20, ARI=0.277, V=0.387, F1=0.339.
+- 2026-05-24T19:04:16: Phase 6-8 final selection complete: method=leiden, feature=hybrid_dense_lexical_dw0.75_lw0.25, clusters=20, ARI=0.277, V=0.387, F1=0.339.
