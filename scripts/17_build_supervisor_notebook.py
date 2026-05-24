@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import argparse
-import sys
 import textwrap
 from pathlib import Path
 
@@ -24,18 +23,22 @@ def build_notebook() -> nbf.NotebookNode:
             """
             # Кластеризация анекдотов anekdot.ru
 
-            Этот ноутбук собирает итоговую практическую часть в одном месте:
-            загрузку корпуса, разведочный анализ, визуализацию кластеров,
-            основные метрики, и дополнительные контрольные эксперименты.
+            Этот ноутбук повторяет логику старого `Sophie_анеки_кластеризация.ipynb`,
+            но на финальном корпусе и финальных артефактах дипломной работы.
 
-            Главный результат остается без учителя: Leiden-кластеризация по
-            текстовым признакам. Теги используются только для оценки и
-            отдельных контрольных моделей, где это явно указано.
+            Внутри есть не только итоговые метрики, но и ход работы: загрузка
+            данных, проверка эмбеддингов, анализ близости текстов, сравнение
+            простых кластерных подходов, Leiden + UMAP, сохранение таблицы с
+            кластерами и дополнительные контрольные оценки.
+
+            Главный результат остается кластеризацией без учителя. Теги не
+            добавляются в текст и не используются как признаки основной модели.
             """
         ),
         code(
             """
             from pathlib import Path
+            import json
             import subprocess
             import sys
 
@@ -43,13 +46,18 @@ def build_notebook() -> nbf.NotebookNode:
             import numpy as np
             import pandas as pd
             from IPython.display import IFrame, Markdown, display
+            from sklearn.metrics.pairwise import cosine_similarity
+            from sklearn.neighbors import NearestNeighbors
+            from sklearn.preprocessing import normalize
 
             ROOT = Path.cwd()
             if not (ROOT / "data").exists() and (ROOT.parent / "data").exists():
                 ROOT = ROOT.parent
 
-            pd.set_option("display.max_columns", 80)
-            pd.set_option("display.max_colwidth", 120)
+            rng = np.random.default_rng(42)
+            pd.set_option("display.max_columns", 100)
+            pd.set_option("display.max_colwidth", 140)
+            plt.rcParams["figure.dpi"] = 120
             print(f"Рабочая папка: {ROOT}")
             """
         ),
@@ -57,10 +65,12 @@ def build_notebook() -> nbf.NotebookNode:
             """
             ## Воспроизводимый запуск
 
-            По умолчанию ноутбук читает уже сохраненные результаты, чтобы его
-            можно было быстро показать и прогнать. Если нужно пересобрать
-            артефакты, переключите `RUN_PIPELINE` на `True`. Тяжелый шаг с
-            эмбеддингами можно пропустить, если файлы уже есть.
+            По умолчанию ноутбук читает уже сохраненные артефакты, чтобы его
+            можно было быстро открыть и показать научному руководителю. Если
+            нужно пересобрать все легкие этапы, включите `RUN_PIPELINE = True`.
+
+            Шаг с BGE-M3 эмбеддингами тяжелый и обычно запускается отдельно на
+            GPU. В этом ноутбуке он не пересчитывается автоматически.
             """
         ),
         code(
@@ -83,36 +93,42 @@ def build_notebook() -> nbf.NotebookNode:
         ),
         md(
             """
-            ## Данные
+            ## Загрузка корпуса
 
-            Итоговый корпус содержит только записи, у которых на сайте есть
-            хотя бы один тег. Это важно: такие теги дают внешний источник
-            проверки качества без ручной построчной разметки анекдотов.
+            Финальная выборка отличается от старого `anekdots.csv`: здесь
+            оставлены только анекдоты, у которых на сайте есть хотя бы один тег.
+            Это нужно для внешней проверки кластеров без ручной построчной
+            разметки.
             """
         ),
         code(
             """
             dataset = pd.read_csv(ROOT / "data/processed/anekdots_tagged.csv")
             clustered = pd.read_csv(ROOT / "data/processed/anekdots_tagged_clustered.csv")
+
             print(f"Строк в корпусе: {len(dataset):,}".replace(",", " "))
+            print(f"Строк с тегами: {(dataset['tag_count'] >= 1).sum():,}".replace(",", " "))
             print(f"Период: {dataset['year'].min()}-{dataset['month'].min():02d} ... {dataset['year'].max()}-{dataset['month'].max():02d}")
             print(f"Месяцев с данными: {dataset[['year', 'month']].drop_duplicates().shape[0]}")
-            print(f"Строк с тегами: {(dataset['tag_count'] >= 1).sum():,}".replace(",", " "))
+            print(f"Финальных кластеров: {clustered['cluster_final'].nunique()}")
+
             display(dataset[["id", "year", "month", "text_clean", "tags_raw", "macro_tags"]].head(5))
             """
         ),
         md(
             """
-            ## Разведочный анализ корпуса
+            ## Небольшой разведочный анализ
 
-            Ниже показаны распределение по годам и самые частотные макро-теги.
-            Макро-теги нужны для оценки результата, но не добавляются в текст и
-            не используются как признаки основного кластерного алгоритма.
+            Сначала посмотрим, насколько равномерно корпус покрывает годы и
+            какие макро-теги встречаются чаще всего. Макро-теги дальше
+            используются только для оценки и интерпретации, не для обучения
+            основной кластеризации.
             """
         ),
         code(
             """
             fig, axes = plt.subplots(1, 2, figsize=(14, 4))
+
             dataset["year"].value_counts().sort_index().plot(kind="bar", ax=axes[0], color="#4b8bbe")
             axes[0].set_title("Количество анекдотов по годам")
             axes[0].set_xlabel("Год")
@@ -123,46 +139,208 @@ def build_notebook() -> nbf.NotebookNode:
             axes[1].barh(top_macro["macro_tag"][::-1], top_macro["count"][::-1], color="#609966")
             axes[1].set_title("Самые частотные макро-теги")
             axes[1].set_xlabel("Упоминаний")
+
             fig.tight_layout()
             plt.show()
             """
         ),
         md(
             """
-            ## Основная кластеризация
+            ## Получение эмбеддингов
 
-            Главный результат: Leiden-кластеризация в гибридном текстовом
-            пространстве BGE/PCA + TF-IDF/SVD. Параметры финальной модели:
-            `k=75`, `resolution=2.0`, `seed=7`. Всего получилось 20 кластеров.
+            В старом ноутбуке эмбеддинги считались прямо в ячейке. В финальной
+            версии они уже сохранены как артефакты, чтобы не тратить время и
+            GPU-кредиты при каждом показе. Используется модель `BAAI/bge-m3`.
+
+            Исторически сравнивались несколько моделей:
+
+            - `sentence-transformers/sentence-t5-base`
+            - `intfloat/multilingual-e5-base`
+            - `intfloat/multilingual-e5-large`
+            - `BAAI/bge-m3`
+
+            Для финального пайплайна оставлена `BAAI/bge-m3`, потому что она
+            лучше подошла для русскоязычных коротких текстов и дала более
+            пригодное пространство соседства.
             """
         ),
         code(
             """
-            final_metrics = pd.read_csv(ROOT / "outputs/tables/final_metrics_summary.csv")
-            final_main = final_metrics[(final_metrics["model"] == "final") & (final_metrics["subset"] == "all")]
-            display(final_main[[
-                "method", "feature_set", "params", "rows", "cluster_count",
-                "largest_cluster_share", "ari", "ami", "v_measure",
-                "pairwise_precision", "pairwise_recall", "pairwise_f1"
-            ]])
+            embeddings = np.load(ROOT / "data/embeddings/tagged_bge_m3.npy")
+            pca128 = np.load(ROOT / "data/embeddings/tagged_pca128.npy")
+            ids = np.load(ROOT / "data/embeddings/tagged_ids.npy", allow_pickle=True)
+            manifest = json.loads((ROOT / "data/embeddings/tagged_embeddings_manifest.json").read_text(encoding="utf-8"))
 
-            sizes = pd.read_csv(ROOT / "outputs/tables/cluster_final_sizes.csv")
-            ax = sizes.sort_values("size", ascending=False).plot(
-                x="cluster_final", y="size", kind="bar", figsize=(12, 4), legend=False, color="#8064a2"
+            print("Модель:", manifest["model_id"])
+            print("Устройство при расчете:", manifest["device"])
+            print("Время расчета, секунд:", manifest["runtime_seconds"])
+            print("Форма эмбеддингов:", embeddings.shape)
+            print("Форма PCA:", pca128.shape)
+            print("Доля объясненной дисперсии PCA:", round(manifest["pca_explained_variance_ratio_sum"], 4))
+            print("Обрезанных текстов токенизатором:", manifest["truncated_text_count"])
+            print("ID синхронизированы с датасетом:", bool((ids.astype(str) == dataset["id"].astype(str).to_numpy()).all()))
+            """
+        ),
+        md(
+            """
+            ## Проверка синхронизации
+
+            Это аналог `sanity_check` из старого ноутбука. Проверяем, что строки
+            корпуса, эмбеддинги, PCA, UMAP и финальные метки кластеров
+            согласованы между собой.
+            """
+        ),
+        code(
+            """
+            def sanity_check(df, clustered_df, embeddings_matrix, pca_matrix, ids_array):
+                print("\\n=== SANITY CHECK ===")
+                print("dataset rows:", len(df))
+                print("clustered rows:", len(clustered_df))
+                print("embeddings rows:", embeddings_matrix.shape[0])
+                print("pca rows:", pca_matrix.shape[0])
+                print("unique final clusters:", clustered_df["cluster_final"].nunique())
+                print("largest cluster share:", round(clustered_df["cluster_final"].value_counts(normalize=True).max(), 4))
+                print("missing texts:", int(df["text_clean"].isna().sum()))
+                print("missing UMAP coordinates:", int(clustered_df[["umap2_x", "umap2_y", "umap3_x", "umap3_y", "umap3_z"]].isna().sum().sum()))
+
+                assert len(df) == len(clustered_df) == embeddings_matrix.shape[0] == pca_matrix.shape[0] == len(ids_array)
+                assert (ids_array.astype(str) == df["id"].astype(str).to_numpy()).all()
+                assert clustered_df["cluster_final"].nunique() == 20
+                assert clustered_df["feature_set"].nunique() == 1
+                print("OK: данные согласованы")
+
+            sanity_check(dataset, clustered, embeddings, pca128, ids)
+            """
+        ),
+        md(
+            """
+            ## Анализ пространства эмбеддингов
+
+            Как и в старом ноутбуке, сравним косинусное сходство случайных пар
+            и ближайших соседей. Если ближайшие соседи заметно ближе случайных
+            пар, значит в эмбеддингах есть полезная структура соседства.
+            """
+        ),
+        code(
+            """
+            emb_norm = normalize(embeddings, norm="l2")
+            n_pairs = 20_000
+            a = rng.integers(0, len(emb_norm), size=n_pairs)
+            b = rng.integers(0, len(emb_norm), size=n_pairs)
+            keep = a != b
+            a, b = a[keep], b[keep]
+            random_sims = np.sum(emb_norm[a] * emb_norm[b], axis=1)
+
+            nn = NearestNeighbors(n_neighbors=2, metric="cosine")
+            nn.fit(emb_norm)
+            nn_dist, nn_idx = nn.kneighbors(emb_norm)
+            nearest_sims = 1 - nn_dist[:, 1]
+
+            sim_summary = pd.DataFrame(
+                {
+                    "random_pairs": pd.Series(random_sims).describe(percentiles=[0.05, 0.25, 0.5, 0.75, 0.95]),
+                    "nearest_neighbors": pd.Series(nearest_sims).describe(percentiles=[0.05, 0.25, 0.5, 0.75, 0.95]),
+                }
             )
-            ax.set_title("Размеры финальных кластеров")
-            ax.set_xlabel("Кластер")
-            ax.set_ylabel("Строк")
+            display(sim_summary)
+            print("Разница средних nearest - random:", round(float(nearest_sims.mean() - random_sims.mean()), 4))
+            """
+        ),
+        code(
+            """
+            plt.figure(figsize=(11, 5))
+            plt.hist(random_sims, bins=100, density=True, alpha=0.45, label="Случайные пары", color="#7aa6c2")
+            plt.hist(nearest_sims, bins=100, density=True, alpha=0.45, label="Ближайшие соседи", color="#d98c5f")
+            plt.axvline(random_sims.mean(), color="#24577a", linestyle="--", linewidth=1)
+            plt.axvline(nearest_sims.mean(), color="#a14f2b", linestyle="--", linewidth=1)
+            plt.title("Косинусное сходство: случайные пары и ближайшие соседи")
+            plt.xlabel("cosine similarity")
+            plt.ylabel("Плотность")
+            plt.legend()
             plt.tight_layout()
             plt.show()
             """
         ),
         md(
             """
-            ## Интерактивная карта UMAP
+            ## Почему не простой KMeans
 
-            UMAP используется только для просмотра структуры, а не для обучения
-            кластеров. Если интерактивный блок не отображается в просмотрщике,
+            Старый ноутбук проверял KMeans и показывал, что для такого
+            пространства он работает хуже. В финальном пайплайне это сохранено
+            как сравнение моделей: KMeans и агломеративная кластеризация есть в
+            таблице, но главным результатом выбран Leiden.
+            """
+        ),
+        code(
+            """
+            metrics = pd.read_csv(ROOT / "outputs/tables/final_metrics_summary.csv")
+            comparison = (
+                metrics[metrics["subset"].eq("all")]
+                .loc[:, ["model", "method", "feature_set", "params", "cluster_count", "largest_cluster_share", "ari", "ami", "v_measure", "pairwise_f1"]]
+                .sort_values(["model"])
+            )
+            display(comparison)
+            """
+        ),
+        md(
+            """
+            ## Теперь кластеризуем графом: Leiden + UMAP
+
+            Кластеризация выполняется не в координатах UMAP. UMAP нужен только
+            для визуального отображения уже найденных кластеров. Основная
+            финальная конфигурация:
+
+            - признаки: `hybrid_dense_lexical_dw0.75_lw0.25`
+            - метод: Leiden
+            - `k=75`, `resolution=2.0`, `seed=7`
+            - число кластеров: 20
+            """
+        ),
+        code(
+            """
+            final_main = metrics[(metrics["model"] == "final") & (metrics["subset"] == "all")].iloc[0]
+            display(pd.DataFrame([final_main])[[
+                "method", "feature_set", "params", "rows", "cluster_count",
+                "largest_cluster_share", "ari", "ami", "v_measure",
+                "pairwise_precision", "pairwise_recall", "pairwise_f1"
+            ]])
+            """
+        ),
+        code(
+            """
+            demo_export = ROOT / "outputs/tables/clustered_anekdots_for_supervisor.csv"
+            export_columns = [
+                "id", "year", "month", "text_clean", "tags_raw", "macro_tags",
+                "cluster_final", "cluster_method", "feature_set",
+                "umap2_x", "umap2_y", "umap3_x", "umap3_y", "umap3_z",
+            ]
+            clustered[export_columns].to_csv(demo_export, index=False, encoding="utf-8")
+            print(f"Saved: {demo_export.relative_to(ROOT)}")
+            """
+        ),
+        code(
+            """
+            plt.figure(figsize=(12, 8))
+            labels = clustered["cluster_final"].astype(str)
+            for label in sorted(labels.unique(), key=lambda x: int(x)):
+                part = clustered[labels == label]
+                plt.scatter(part["umap2_x"], part["umap2_y"], s=8, alpha=0.65, label=label)
+
+            plt.title("Leiden clustering + UMAP")
+            plt.xlabel("UMAP-1")
+            plt.ylabel("UMAP-2")
+            plt.grid(alpha=0.25)
+            plt.legend(title="cluster", bbox_to_anchor=(1.02, 1), loc="upper left", ncol=1, fontsize=8)
+            plt.tight_layout()
+            plt.show()
+            """
+        ),
+        md(
+            """
+            ## Интерактивная 3D-карта
+
+            Эта карта удобна для демонстрации: можно вращать пространство и
+            смотреть отдельные точки. Если в просмотрщике HTML не отобразится,
             откройте файл `outputs/figures/umap3d_final.html`.
             """
         ),
@@ -174,11 +352,40 @@ def build_notebook() -> nbf.NotebookNode:
         ),
         md(
             """
+            ## Интерпретация кластеров
+
+            Для отчета важны не только номера кластеров, но и их содержательное
+            описание. Ниже показаны размеры кластеров и готовые карточки
+            интерпретации.
+            """
+        ),
+        code(
+            """
+            sizes = pd.read_csv(ROOT / "outputs/tables/cluster_final_sizes.csv")
+            cards = pd.read_csv(ROOT / "outputs/tables/cluster_final_interpretation_cards.csv")
+
+            fig, ax = plt.subplots(figsize=(12, 4))
+            sizes.sort_values("size", ascending=False).plot(
+                x="cluster_final", y="size", kind="bar", legend=False, color="#8064a2", ax=ax
+            )
+            ax.set_title("Размеры финальных кластеров")
+            ax.set_xlabel("Кластер")
+            ax.set_ylabel("Строк")
+            plt.tight_layout()
+            plt.show()
+
+            display(cards.head(12))
+            """
+        ),
+        md(
+            """
             ## Иерархическая оценка
 
-            Подробные макро-теги были дополнительно объединены в широкие
-            тематические группы первого уровня. Такая оценка обычно выше,
-            потому что она проверяет более грубое тематическое совпадение.
+            Подробные макро-теги дополнительно объединены в широкие группы.
+            Обычно такая оценка может быть выше, потому что она проверяет более
+            грубое тематическое совпадение. В текущем прогоне она не стала выше
+            для V-measure и pairwise F1: широкие группы оказались достаточно
+            разнородными, поэтому это только вспомогательная проверка.
             """
         ),
         code(
@@ -194,9 +401,10 @@ def build_notebook() -> nbf.NotebookNode:
             """
             ## Контрольная модель с учителем
 
-            Эта модель не является кластеризацией. Она предсказывает макро-теги
-            по текстовым признакам на разбиении train/validation/test. Цель -
-            проверить, есть ли в тексте сигнал, связанный с тегами.
+            Это не кластеризация. Здесь модель учится предсказывать макро-теги
+            по текстовым признакам на разбиении train/validation/test. Такой
+            baseline показывает, что теговый сигнал в тексте есть, но его нельзя
+            выдавать за независимую оценку кластеризации.
             """
         ),
         code(
@@ -214,9 +422,9 @@ def build_notebook() -> nbf.NotebookNode:
             ## Полуобучаемая верхняя граница
 
             В этом эксперименте теги уже влияют на представление текстов:
-            создаются пары похожих и непохожих анекдотов, затем обучается
-            контрастивное преобразование эмбеддингов. Поэтому эти метрики нельзя
-            считать независимой проверкой основной кластеризации.
+            создаются положительные и отрицательные пары, затем обучается
+            контрастивное преобразование эмбеддингов. Поэтому это верхняя
+            граница с подсказкой от тегов, а не независимая проверка.
             """
         ),
         code(
@@ -232,10 +440,8 @@ def build_notebook() -> nbf.NotebookNode:
             """
             ## Итоговая картина метрик
 
-            В дипломе основной строкой следует считать независимую
-            unsupervised-кластеризацию. Остальные строки - вспомогательные:
-            они объясняют, почему грубые темы восстанавливаются лучше и почему
-            модели с использованием тегов дают отдельную, не независимую оценку.
+            Основной строкой для диплома остается `unsupervised_leiden_final`.
+            Остальные строки нужны как поясняющие контрольные эксперименты.
             """
         ),
         code(
@@ -252,13 +458,15 @@ def build_notebook() -> nbf.NotebookNode:
             """
             ## Краткий вывод
 
-            Основная модель дает умеренные, но честные метрики: ARI около
-            0.277, V-measure около 0.387, точная pairwise F1 около 0.339.
-            Это ожидаемо для коротких юмористических текстов с несколькими
-            темами и шумными пользовательскими тегами. Иерархическая оценка
-            показывает согласование на более широких темах, а модели с
-            использованием тегов подтверждают, что теговый сигнал в тексте есть,
-            но они должны описываться отдельно от независимой кластеризации.
+            Финальная Leiden-модель дает 20 кластеров и умеренные, но честные
+            метрики: ARI около 0.277, V-measure около 0.387, точная pairwise F1
+            около 0.339. Это ожидаемо для коротких юмористических текстов:
+            один анекдот часто совмещает несколько тем, а теги сайта являются
+            шумной внешней разметкой.
+
+            Supervised и semi-supervised результаты полезны как контрольные
+            эксперименты: они показывают, что связь между текстом и тегами есть.
+            Но они не заменяют основную кластеризацию без учителя.
             """
         ),
     ]

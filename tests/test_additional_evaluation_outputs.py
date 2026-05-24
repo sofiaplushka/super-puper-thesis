@@ -100,13 +100,30 @@ def test_final_evaluation_story_and_supervisor_notebook():
     auxiliary = story[story["label_guided_representation"] == True]
     assert (auxiliary["main_or_auxiliary"] != "main").all()
 
-    notebooks = list(Path("notebooks").glob("Sophie_*.ipynb"))
-    assert notebooks
-    nb = nbformat.read(str(notebooks[0]), as_version=4)
+    notebook_path = Path("notebooks/Sophie_анеки_кластеризация_итоговая.ipynb")
+    assert notebook_path.exists()
+    nb = nbformat.read(str(notebook_path), as_version=4)
     code_cells = [cell for cell in nb.cells if cell.cell_type == "code"]
-    assert code_cells
-    assert sum(bool(cell.get("outputs")) for cell in code_cells) >= 5
-    assert any(cell.get("execution_count") is not None for cell in code_cells)
+    markdown_cells = [cell for cell in nb.cells if cell.cell_type == "markdown"]
+    assert len(code_cells) >= 15
+    assert len(markdown_cells) >= 14
+    assert sum(bool(cell.get("outputs")) for cell in code_cells) >= 15
+    assert all(cell.get("execution_count") is not None for cell in code_cells)
     markdown = "\n".join(cell.source for cell in nb.cells if cell.cell_type == "markdown")
+    all_source = "\n".join(cell.source for cell in nb.cells)
     assert "Кластеризация анекдотов" in markdown
-    assert "Основная модель" in markdown
+    assert "Получение эмбеддингов" in markdown
+    assert "Анализ пространства эмбеддингов" in markdown
+    assert "Почему не простой KMeans" in markdown
+    assert "Теперь кластеризуем графом: Leiden + UMAP" in markdown
+    assert "Контрольная модель с учителем" in markdown
+    assert "sanity_check" in all_source
+    assert "Leiden clustering + UMAP" in all_source
+    assert "Saved:" in str(nb)
+    assert "Рљ" not in all_source
+
+    export = Path("outputs/tables/clustered_anekdots_for_supervisor.csv")
+    assert export.exists() and export.stat().st_size > 0
+    exported = pd.read_csv(export)
+    assert len(exported) == 5509
+    assert {"cluster_final", "umap2_x", "umap2_y", "text_clean"}.issubset(exported.columns)

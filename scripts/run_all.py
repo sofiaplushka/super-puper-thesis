@@ -146,7 +146,12 @@ def main() -> int:
     run(
         [py, "scripts/17_build_supervisor_notebook.py"],
         skip=args.skip_existing
-        and Path("notebooks/Sophie_анеки_кластеризация_итоговая.ipynb").exists(),
+        and exists_all(
+            [
+                "notebooks/Sophie_анеки_кластеризация_итоговая.ipynb",
+                "outputs/tables/clustered_anekdots_for_supervisor.csv",
+            ]
+        ),
     )
     return 0
 
