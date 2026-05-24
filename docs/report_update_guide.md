@@ -84,6 +84,21 @@ The old 12-cluster internal metrics are archived as:
 
 - `outputs/tables/internal_cluster_metrics_initial_leiden.csv`
 
+Auxiliary controls, reported separately from the main result:
+
+- Hierarchical level-1 evaluation of the same unsupervised clusters:
+  ARI 0.1697, V-measure 0.2722, exact pairwise F1 0.2477.
+- Supervised multilabel tag classifier on held-out test data:
+  macro-F1 0.6665, micro-F1 0.7259, weighted-F1 0.7181.
+- Semi-supervised label-guided clustering upper-bound:
+  holdout V-measure 0.4309 and pairwise F1 0.4141; full-corpus
+  label-guided V-measure 0.4341 and pairwise F1 0.4634.
+
+Use `outputs/tables/final_evaluation_story.csv` as the compact comparison
+table for the committee. The first row, unsupervised Leiden final, is the main
+result. The hierarchical, supervised, and semi-supervised rows are auxiliary
+controls.
+
 ## What not to overstate
 
 - Do not describe the final result as supervised classification quality.
@@ -91,12 +106,18 @@ The old 12-cluster internal metrics are archived as:
 - Do not claim that site tags are expert labels.
 - Do not imply that UMAP coordinates were used for clustering.
 - Do not hide that the final metrics remain moderate.
+- Do not present the supervised classifier as clustering.
+- Do not present semi-supervised metrics as independent external validation.
 
 The correct interpretation is narrower: the final configuration improves
 alignment between unsupervised text clusters and external site-tag silver labels,
 reduces cluster imbalance, and gives more interpretable report-ready clusters.
 Moderate metric values are expected because short humor texts often combine
 several themes and the external labels are noisy multi-label site tags.
+Level-1 hierarchical metrics may be higher in some settings because broad
+categories forgive detailed-topic confusion, but this is not guaranteed; in the
+current run, the chosen broad categories are heterogeneous enough that
+V-measure and pairwise F1 are lower than the level-2 detailed metrics.
 
 ## Russian thesis-ready wording
 
@@ -154,6 +175,46 @@ V-measure - с 0.3109 до 0.3871, точная pairwise multilabel F1 - с 0.28
 улучшение соответствия между unsupervised-кластерами и внешними тегами, а не
 как задачу supervised-классификации с высокой точностью.
 
+### Why unsupervised metrics are moderate
+
+Основные метрики остаются умеренными не из-за ошибки в коде, а из-за природы
+задачи. Анекдоты короткие, часто содержат несколько тем одновременно, а теги
+сайта являются пользовательскими и шумными. Кроме того, кластеризация без
+учителя не видит сами теги и группирует тексты по близости признаков, а не по
+заранее заданным классам. Поэтому ARI около 0.2768, V-measure около 0.3871 и
+точная pairwise F1 около 0.3388 следует трактовать как честное частичное
+совпадение кластеров с внешней разметкой.
+
+### Hierarchical level-1 evaluation
+
+Иерархическая оценка объединяет подробные макро-теги в более широкие группы.
+В общем случае такие метрики могут быть выше, потому что широкая группа
+прощает путаницу между близкими подробными темами. В текущем прогоне этого не
+произошло для V-measure и pairwise F1: широкие группы получились достаточно
+разнородными, увеличили число положительных пар и снизили полноту. Поэтому
+level-1 оценку лучше описывать как дополнительную проверку грубой тематической
+структуры, а не как замену финальных подробных метрик.
+
+### Supervised and semi-supervised controls
+
+Модель с учителем и полуобучаемый эксперимент показывают другую вещь: в тексте
+действительно есть сигнал, связанный с тегами. Supervised baseline предсказывает
+макро-теги по текстовым признакам и на тестовой выборке дает micro-F1 около
+0.7259. Полуобучаемый upper-bound использует теги при обучении представления и
+на holdout-части дает V-measure около 0.4309 и pairwise F1 около 0.4141. Эти
+числа нельзя сравнивать с основной кластеризацией как с независимой проверкой,
+потому что в них теги уже участвуют в обучении или выборе модели.
+
+### Main and auxiliary numbers
+
+В качестве основных чисел в дипломе следует использовать финальную
+unsupervised Leiden-кластеризацию: 20 кластеров, доля крупнейшего кластера
+около 12.9%, ARI 0.2768, AMI 0.3772, V-measure 0.3871 и точная pairwise F1
+0.3388. Вспомогательные числа - это level-1 иерархическая оценка, supervised
+tag-prediction baseline и semi-supervised upper-bound. Их задача - пояснить
+границы метода и показать наличие тегового сигнала в тексте, а не заменить
+основной результат.
+
 ## Reproduce
 
 ```bash
@@ -169,5 +230,10 @@ python scripts/09_select_final_and_interpret.py
 python scripts/11_compute_final_internal_metrics.py
 python scripts/12_macro_tag_mapping_audit.py
 python scripts/10_build_execution_summary_notebook.py
+python scripts/13_hierarchical_evaluation.py
+python scripts/14_supervised_tag_prediction_baseline.py
+python scripts/15_semi_supervised_upper_bound.py
+python scripts/16_final_evaluation_story.py
+python scripts/17_build_supervisor_notebook.py
 python scripts/run_all.py --skip-existing
 ```

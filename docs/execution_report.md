@@ -32,6 +32,11 @@ python scripts/09_select_final_and_interpret.py
 python scripts/11_compute_final_internal_metrics.py
 python scripts/12_macro_tag_mapping_audit.py
 python scripts/10_build_execution_summary_notebook.py
+python scripts/13_hierarchical_evaluation.py
+python scripts/14_supervised_tag_prediction_baseline.py
+python scripts/15_semi_supervised_upper_bound.py
+python scripts/16_final_evaluation_story.py
+python scripts/17_build_supervisor_notebook.py
 ```
 
 Google Colab was used only for GPU embedding generation on a Tesla T4 through
@@ -216,6 +221,30 @@ metrics were archived as `outputs/tables/internal_cluster_metrics_initial_leiden
 The execution notebook is a local nbclient reproducibility summary based on
 saved repository artifacts. It is not described as a real Colab execution
 notebook.
+
+### Additional honest evaluation controls
+
+Added after the final unsupervised Leiden result, without changing
+`cluster_final`:
+
+- `config/macro_tag_hierarchy.yml`
+- `outputs/tables/hierarchical_metrics_summary.csv`
+- `outputs/report_notes/13_hierarchical_evaluation.md`
+- `outputs/tables/supervised_tag_prediction_baseline.csv`
+- `outputs/report_notes/14_supervised_tag_prediction_baseline.md`
+- `data/embeddings/tagged_bge_m3_finetuned.npy`
+- `data/embeddings/tagged_bge_m3_finetuned.manifest.json`
+- `outputs/tables/semi_supervised_embedding_metrics.csv`
+- `outputs/tables/semi_supervised_vs_unsupervised.csv`
+- `outputs/report_notes/15_semi_supervised_upper_bound.md`
+- `outputs/tables/final_evaluation_story.csv`
+- `outputs/report_notes/16_final_metrics_interpretation_for_committee.md`
+- `notebooks/Sophie_анеки_кластеризация_итоговая.ipynb`
+
+The supervised and semi-supervised results are auxiliary controls. They show
+that tag signal is present in text and what a label-guided upper-bound can look
+like. They are not independent validation and do not replace the main
+unsupervised Leiden metrics.
 
 ## Rerun locally
 

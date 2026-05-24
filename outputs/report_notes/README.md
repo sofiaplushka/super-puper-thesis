@@ -15,6 +15,10 @@ Use these files to update the written thesis without rerunning the pipeline:
 - `10_final_clustering_selection.md` - final selected clustering configuration and before/after metrics.
 - `11_cluster_interpretation.md` - c-TF-IDF terms, dominant tags, and report-ready cluster cards.
 - `12_macro_tag_mapping_audit.md` - tag-level audit explaining why the final macro mapping has no `other` bucket.
+- `13_hierarchical_evaluation.md` - level-1 and level-2 macro-tag evaluation.
+- `14_supervised_tag_prediction_baseline.md` - supervised multilabel tag prediction control.
+- `15_semi_supervised_upper_bound.md` - label-guided semi-supervised clustering upper-bound.
+- `16_final_metrics_interpretation_for_committee.md` - final main-vs-auxiliary metric story.
 
 Key Phase 7 tables:
 
@@ -26,3 +30,7 @@ Key Phase 7 tables:
 - `outputs/tables/cluster_structural_summary.csv`
 - `outputs/tables/final_internal_cluster_metrics.csv`
 - `outputs/tables/macro_tag_mapping_audit.csv`
+- `outputs/tables/hierarchical_metrics_summary.csv`
+- `outputs/tables/supervised_tag_prediction_baseline.csv`
+- `outputs/tables/semi_supervised_embedding_metrics.csv`
+- `outputs/tables/final_evaluation_story.csv`

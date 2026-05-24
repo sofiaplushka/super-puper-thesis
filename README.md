@@ -22,6 +22,11 @@ python scripts/09_select_final_and_interpret.py
 python scripts/11_compute_final_internal_metrics.py
 python scripts/12_macro_tag_mapping_audit.py
 python scripts/10_build_execution_summary_notebook.py
+python scripts/13_hierarchical_evaluation.py
+python scripts/14_supervised_tag_prediction_baseline.py
+python scripts/15_semi_supervised_upper_bound.py
+python scripts/16_final_evaluation_story.py
+python scripts/17_build_supervisor_notebook.py
 python scripts/run_all.py --skip-existing
 ```
 
@@ -30,5 +35,9 @@ Colab runtime and running the same `scripts/02_compute_embeddings.py` command.
 The final clustering result is Leiden over `hybrid_dense_lexical_dw0.75_lw0.25`
 with `k=75`, `resolution=2.0`, `seed=7`, 20 clusters, and report artifacts under
 `outputs/`.
+Additional evaluation controls are stored separately: hierarchical macro-tag
+evaluation, supervised tag prediction, and a label-guided semi-supervised
+upper-bound experiment. These controls do not replace the main unsupervised
+Leiden result.
 Do not commit prompt files, Colab bridge code, tokens, `.env` files, ngrok URLs,
 logs, or cache directories.

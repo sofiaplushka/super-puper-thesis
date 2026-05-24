@@ -1,0 +1,25 @@
+{
+  "embedding_file": "data/embeddings/tagged_bge_m3_finetuned.npy",
+  "source_embedding_file": "data/embeddings/tagged_pca128.npy",
+  "backend": "torch_linear_projection_contrastive",
+  "label_guided": true,
+  "independent_external_validation": false,
+  "sentence_transformers_available": false,
+  "train_rows": 3305,
+  "validation_rows": 1102,
+  "holdout_rows": 1102,
+  "pair_stats": {
+    "positive_pairs": 6572,
+    "negative_pairs": 9235,
+    "hard_negative_pairs": 2630,
+    "total_pairs": 15807
+  },
+  "training_stats": {
+    "initial_loss": 0.169957130666702,
+    "final_loss": 0.12134446155640387,
+    "epochs": 8.0
+  },
+  "selected_params": "k=30;resolution=2.0;seed=42",
+  "validation_selection_score": 0.4642244311858133,
+  "note": "This artifact is a label-guided upper-bound representation. The local run trained a contrastive projection over saved text embeddings, not the main unsupervised Leiden feature space."
+}

@@ -1,0 +1,50 @@
+politics_society:
+  description: "Politics, state institutions, conflict, law, and social geography."
+  level2:
+    - politics_power
+    - soviet_history_politics
+    - army_police
+    - law_crime
+    - ethnic_regional
+    - cities_places
+relationships_identity:
+  description: "Family, relationships, gender roles, children, and education."
+  level2:
+    - family_relationships
+    - sex_gender
+    - education_children
+daily_life_services:
+  description: "Everyday situations, services, transport, food, and animals."
+  level2:
+    - everyday_life
+    - consumer_services
+    - transport
+    - food_diet
+    - animals
+work_money_technology:
+  description: "Work, professions, money, business, technology, and internet."
+  level2:
+    - work_professions
+    - finance_economy
+    - it_internet
+    - internet_memes
+culture_media_characters:
+  description: "Recurring fictional characters, folklore, pop culture, media, and textual forms."
+  level2:
+    - literature_folklore_characters
+    - media_popculture
+    - textual_forms
+health_habits_sport:
+  description: "Health, pandemic themes, substances, habits, and sport."
+  level2:
+    - health_medicine
+    - covid_pandemic
+    - alcohol_smoking_drugs
+    - sport
+beliefs_science_absurd:
+  description: "Religion, holidays, science, space, absurdity, and residual technical bucket."
+  level2:
+    - religion_holidays
+    - science_space
+    - absurd_philosophy
+    - other
