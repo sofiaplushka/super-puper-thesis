@@ -1,0 +1,3 @@
+- 2026-05-24T17:29:25: Phase 2 remap complete: other 1830 -> 0 (100.0% reduction).
+- 2026-05-24T17:30:58: Phase 3 exact metrics complete: excluding_other ARI=0.197, V=0.311, exact pairwise F1=0.285.
+- 2026-05-24T17:35:02: Phase 4 feature ablation complete: best=hybrid_dense_lexical_structural_dw1.0_lw0.25_sw0.1 score=0.195.

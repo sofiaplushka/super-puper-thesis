@@ -1,0 +1,32 @@
+# Exact validation metrics
+
+Cluster label column: `cluster_leiden`.
+Pairwise multilabel metrics are exact and use combinatorial counting over macro-tag sets.
+
+## All rows
+| subset   |   rows |   cluster_count |   largest_cluster_share |   cluster_size_entropy |      ari |      ami |      nmi |   homogeneity |   completeness |   v_measure |   pairwise_precision |   pairwise_recall |   pairwise_f1 |   pairwise_total_pairs |   pairwise_model_positive_pairs |   pairwise_label_positive_pairs |   pairwise_true_positive |   pairwise_false_positive |   pairwise_false_negative |   pairwise_true_negative |
+|:---------|-------:|----------------:|------------------------:|-----------------------:|---------:|---------:|---------:|--------------:|---------------:|------------:|---------------------:|------------------:|--------------:|-----------------------:|--------------------------------:|--------------------------------:|-------------------------:|--------------------------:|--------------------------:|-------------------------:|
+| all      |   5509 |              12 |                0.204574 |                3.30698 | 0.196673 | 0.303855 | 0.310895 |      0.272769 |       0.361411 |    0.310895 |             0.229705 |          0.374027 |      0.284616 |               15171786 |                         1759639 |                         1080666 |                   404198 |                   1355441 |                    676468 |                 12735679 |
+
+## Excluding other
+| subset          |   rows |   cluster_count |   largest_cluster_share |   cluster_size_entropy |      ari |      ami |      nmi |   homogeneity |   completeness |   v_measure |   pairwise_precision |   pairwise_recall |   pairwise_f1 |   pairwise_total_pairs |   pairwise_model_positive_pairs |   pairwise_label_positive_pairs |   pairwise_true_positive |   pairwise_false_positive |   pairwise_false_negative |   pairwise_true_negative |
+|:----------------|-------:|----------------:|------------------------:|-----------------------:|---------:|---------:|---------:|--------------:|---------------:|------------:|---------------------:|------------------:|--------------:|-----------------------:|--------------------------------:|--------------------------------:|-------------------------:|--------------------------:|--------------------------:|-------------------------:|
+| excluding_other |   5509 |              12 |                0.204574 |                3.30698 | 0.196673 | 0.303855 | 0.310895 |      0.272769 |       0.361411 |    0.310895 |             0.229705 |          0.374027 |      0.284616 |               15171786 |                         1759639 |                         1080666 |                   404198 |                   1355441 |                    676468 |                 12735679 |
+
+## Single clear label
+| subset             |   rows |   cluster_count |   largest_cluster_share |   cluster_size_entropy |      ari |      ami |      nmi |   homogeneity |   completeness |   v_measure |   pairwise_precision |   pairwise_recall |   pairwise_f1 |   pairwise_total_pairs |   pairwise_model_positive_pairs |   pairwise_label_positive_pairs |   pairwise_true_positive |   pairwise_false_positive |   pairwise_false_negative |   pairwise_true_negative |
+|:-------------------|-------:|----------------:|------------------------:|-----------------------:|---------:|---------:|---------:|--------------:|---------------:|------------:|---------------------:|------------------:|--------------:|-----------------------:|--------------------------------:|--------------------------------:|-------------------------:|--------------------------:|--------------------------:|-------------------------:|
+| single_clear_label |   4921 |              12 |                0.204227 |                3.30998 | 0.221984 | 0.330304 | 0.337961 |      0.297858 |       0.390542 |    0.337961 |             0.216273 |          0.412636 |      0.283799 |               12105660 |                         1398469 |                          732973 |                   302451 |                   1096018 |                    430522 |                 10276669 |
+
+## Multi-label rows
+| subset      |   rows |   cluster_count |   largest_cluster_share |   cluster_size_entropy |       ari |      ami |      nmi |   homogeneity |   completeness |   v_measure |   pairwise_precision |   pairwise_recall |   pairwise_f1 |   pairwise_total_pairs |   pairwise_model_positive_pairs |   pairwise_label_positive_pairs |   pairwise_true_positive |   pairwise_false_positive |   pairwise_false_negative |   pairwise_true_negative |
+|:------------|-------:|----------------:|------------------------:|-----------------------:|----------:|---------:|---------:|--------------:|---------------:|------------:|---------------------:|------------------:|--------------:|-----------------------:|--------------------------------:|--------------------------------:|-------------------------:|--------------------------:|--------------------------:|-------------------------:|
+| multi_label |    588 |              12 |                0.207483 |                3.24799 | 0.0554115 | 0.148904 | 0.217792 |      0.193151 |        0.24964 |    0.217792 |             0.387965 |          0.229639 |      0.288508 |                 172578 |                           21105 |                           35656 |                     8188 |                     12917 |                     27468 |                   124005 |
+
+## Exact pairwise
+|   total_pairs |   model_positive_pairs |   label_positive_pairs |   true_positive |   false_positive |   false_negative |   true_negative |   precision |   recall |       f1 | exact   |
+|--------------:|-----------------------:|-----------------------:|----------------:|-----------------:|-----------------:|----------------:|------------:|---------:|---------:|:--------|
+|      15171786 |                1759639 |                1080666 |          404198 |          1355441 |           676468 |        12735679 |    0.229705 | 0.374027 | 0.284616 | True    |
+
+The current improvement at this checkpoint is mostly due to semantic macro-tag remapping, not
+changed clustering. Feature ablations and clustering search are run in later phases.

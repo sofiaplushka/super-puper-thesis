@@ -1,2 +1,2 @@
-adjusted_rand_index,adjusted_mutual_info,homogeneity,completeness,v_measure,rows,label_source
-0.13970635667332057,0.25726823842925245,0.27840219803732186,0.2446142255239253,0.2604168243641514,5509,primary_macro_tag_all_rows_weaker_approximation
+ari,ami,nmi,homogeneity,completeness,v_measure,rows,label_source
+0.19667260190427993,0.30385474060613765,0.310894751776334,0.2727687545925535,0.3614105766054258,0.310894751776334,5509,primary_macro_tag_all_rows_after_remap

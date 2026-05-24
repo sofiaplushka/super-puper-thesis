@@ -1,0 +1,9 @@
+metric,before_baseline,after_current,delta,note
+excluding_other_ari,,0.19667260190427993,,
+excluding_other_v_measure,,0.310894751776334,,
+other_occurrences,1830.0,0.0,-1830.0,
+pairwise_f1_exact,,0.28461591272768244,,
+pairwise_f1_sampled,0.258864,,,baseline pairwise was sampled
+single_clear_ami,0.262534,0.3303037223233825,0.06776972232338252,
+single_clear_ari,0.133207,0.22198391646328255,0.08877691646328256,
+single_clear_v_measure,0.265831,0.3379608488103374,0.0721298488103374,

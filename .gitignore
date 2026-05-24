@@ -15,6 +15,10 @@ NL2BI-AI-assistant/
 docs/00_GLOBAL_RULES.md
 docs/0[1-7]_*.md
 docs/MASTER_PROMPT_ALL_TASKS.md
+docs/.codex_goal/
+docs/reference_prompts/
+docs/PASTE_THIS_GOAL.md
+docs/README.md
 data/cache/
 outputs/cache/
 artifacts/

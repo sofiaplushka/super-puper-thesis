@@ -1,78 +1,160 @@
-macro_tag,tag_raw
-politics_power,политика
-politics_power,Путин
-politics_power,Медведев
-politics_power,Навальный
-politics_power,Трамп
-politics_power,Обама
-politics_power,Украина
-politics_power,санкции
-politics_power,коррупция
-politics_power,демократия
-politics_power,Березовский
-politics_power,Абрамович
-family_relationships,муж и жена
-family_relationships,тёща
-family_relationships,семья
-family_relationships,любовь
-family_relationships,свадьба
-family_relationships,девушки
-family_relationships,мужчины
-work_professions,работа
-work_professions,врачи
-work_professions,программист
-work_professions,сантехник
-work_professions,учитель
-education_children,школа
-education_children,студент
-education_children,студенты
-education_children,дети
-education_children,вовочка
-education_children,егэ
-army_police,армия
-army_police,война
-army_police,милиция
-army_police,полиция
-army_police,гаи
-army_police,фсб
-it_internet,интернет
-it_internet,telegram
-it_internet,windows
-it_internet,apple
-it_internet,мобильный
-it_internet,ии
-it_internet,Билл Гейтс
-it_internet,Вконтакте
-character_cycles,Штирлиц
-character_cycles,чапаев
-character_cycles,чукча
-character_cycles,Рабинович
-character_cycles,Винни-Пух
-character_cycles,Чебурашка
-character_cycles,Буратино
-character_cycles,Гарри Поттер
-character_cycles,Дед Мороз
-everyday_life,деньги
-everyday_life,дача
-everyday_life,соседи
-everyday_life,транспорт
-everyday_life,жкх
-everyday_life,авто
-everyday_life,маршрутка
-everyday_life,автобус
-everyday_life,такси
-everyday_life,пиво
-everyday_life,водка
-everyday_life,новогодний
-everyday_life,тв
-everyday_life,кино
-everyday_life,русский язык
-animals,кошки
-animals,собаки
-animals,животные
-other,юмор
-other,о жизни
-other,1 апреля
-other,14 февраля
-other,23 февраля
-other,8 марта
+macro_tag,tag_raw,tag_norm
+politics_power,политика,политика
+politics_power,Путин,путин
+politics_power,Медведев,медведев
+politics_power,Навальный,навальный
+politics_power,Трамп,трамп
+politics_power,Обама,обама
+politics_power,Украина,украина
+politics_power,санкции,санкции
+politics_power,коррупция,коррупция
+politics_power,демократия,демократия
+politics_power,Березовский,березовский
+politics_power,Абрамович,абрамович
+politics_power,Прохоров,прохоров
+politics_power,Валуев,валуев
+soviet_history_politics,Сталин,сталин
+soviet_history_politics,Брежнев,брежнев
+family_relationships,муж и жена,муж и жена
+family_relationships,тёща,тёща
+family_relationships,семья,семья
+family_relationships,любовь,любовь
+family_relationships,свадьба,свадьба
+sex_gender,девушки,девушки
+sex_gender,мужчины,мужчины
+sex_gender,секс,секс
+sex_gender,пошлые,пошлые
+sex_gender,блондинки,блондинки
+sex_gender,брюнетки,брюнетки
+sex_gender,геи,геи
+work_professions,работа,работа
+work_professions,программист,программист
+work_professions,сантехник,сантехник
+work_professions,пожарный,пожарный
+education_children,школа,школа
+education_children,студент,студент
+education_children,дети,дети
+education_children,вовочка,вовочка
+education_children,егэ,егэ
+army_police,армия,армия
+army_police,война,война
+army_police,милиция,милиция
+army_police,фсб,фсб
+law_crime,гаи,гаи
+law_crime,таможня,таможня
+transport,авто,авто
+transport,авиация,авиация
+transport,поезд,поезд
+transport,метро,метро
+transport,трамвай,трамвай
+transport,троллейбус,троллейбус
+transport,автобус,автобус
+transport,маршрутка,маршрутка
+transport,такси,такси
+transport,лифт,лифт
+transport,парашют,парашют
+transport,трактор,трактор
+it_internet,интернет,интернет
+it_internet,telegram,telegram
+it_internet,windows,windows
+it_internet,apple,apple
+it_internet,мобильный,мобильный
+it_internet,ии,ии
+it_internet,Билл Гейтс,билл гейтс
+it_internet,Вконтакте,вконтакте
+it_internet,смс,смс
+it_internet,твиттер,твиттер
+internet_memes,мемы,мемы
+literature_folklore_characters,Штирлиц,штирлиц
+literature_folklore_characters,чапаев,чапаев
+literature_folklore_characters,чукча,чукча
+literature_folklore_characters,Рабинович,рабинович
+literature_folklore_characters,Винни-Пух,винни-пух
+literature_folklore_characters,Чебурашка,чебурашка
+literature_folklore_characters,Буратино,буратино
+literature_folklore_characters,Гарри Поттер,гарри поттер
+literature_folklore_characters,Ржевский,ржевский
+literature_folklore_characters,Шерлок Холмс,шерлок холмс
+literature_folklore_characters,армянское радио,армянское радио
+literature_folklore_characters,золотая рыбка,золотая рыбка
+literature_folklore_characters,Иван-царевич,иван-царевич
+literature_folklore_characters,Красная Шапочка,красная шапочка
+literature_folklore_characters,Колобок,колобок
+literature_folklore_characters,Муму,муму
+literature_folklore_characters,богатыри,богатыри
+literature_folklore_characters,Карлсон,карлсон
+literature_folklore_characters,Пушкин,пушкин
+literature_folklore_characters,Адам и Ева,адам и ева
+literature_folklore_characters,Донцова,донцова
+literature_folklore_characters,Каренина,каренина
+literature_folklore_characters,Мазай,мазай
+literature_folklore_characters,Хоттабыч,хоттабыч
+literature_folklore_characters,Сусанин,сусанин
+literature_folklore_characters,Баба-Яга,баба-яга
+media_popculture,Дед Мороз,дед мороз
+media_popculture,звёзды,звёзды
+media_popculture,тв,тв
+media_popculture,кино,кино
+media_popculture,фильмы,фильмы
+media_popculture,мультфильмы,мультфильмы
+media_popculture,покемоны,покемоны
+media_popculture,Чак Норрис,чак норрис
+media_popculture,Куклачев,куклачев
+everyday_life,погода,погода
+everyday_life,дача,дача
+everyday_life,соседи,соседи
+everyday_life,отдых,отдых
+everyday_life,рыбалка,рыбалка
+everyday_life,охота,охота
+everyday_life,бесплатное,бесплатное
+everyday_life,почта,почта
+everyday_life,приметы,приметы
+consumer_services,жкх,жкх
+consumer_services,реклама,реклама
+consumer_services,объявления,объявления
+finance_economy,деньги,деньги
+finance_economy,налоги,налоги
+finance_economy,кредиты,кредиты
+finance_economy,кризис,кризис
+finance_economy,сбербанк,сбербанк
+finance_economy,ммм,ммм
+health_medicine,врачи,врачи
+health_medicine,аптека,аптека
+health_medicine,грипп,грипп
+health_medicine,пенсионеры,пенсионеры
+health_medicine,Онищенко,онищенко
+covid_pandemic,коронавирус,коронавирус
+alcohol_smoking_drugs,водка,водка
+alcohol_smoking_drugs,пиво,пиво
+alcohol_smoking_drugs,сигареты,сигареты
+alcohol_smoking_drugs,наркотики,наркотики
+religion_holidays,новогодний,новогодний
+religion_holidays,8 марта,8 марта
+religion_holidays,23 февраля,23 февраля
+religion_holidays,1 апреля,1 апреля
+religion_holidays,14 февраля,14 февраля
+religion_holidays,пасха,пасха
+food_diet,диета,диета
+food_diet,веган,веган
+animals,кошки,кошки
+animals,собаки,собаки
+animals,животные,животные
+animals,тараканы,тараканы
+sport,спорт,спорт
+sport,футбол,футбол
+sport,хоккей,хоккей
+sport,Сочи 2014,сочи 2014
+cities_places,Одесса,одесса
+cities_places,Москва,москва
+cities_places,Челябинск,челябинск
+ethnic_regional,новые русские,новые русские
+science_space,космос,космос
+science_space,нанотехнологии,нанотехнологии
+science_space,британские ученые,британские ученые
+science_space,Перельман,перельман
+textual_forms,русский язык,русский язык
+textual_forms,инструкции,инструкции
+textual_forms,цитаты,цитаты
+absurd_philosophy,юмор,юмор
+absurd_philosophy,о жизни,о жизни
+absurd_philosophy,конец света,конец света
