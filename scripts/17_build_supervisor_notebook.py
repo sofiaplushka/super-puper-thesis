@@ -42,7 +42,7 @@ def build_notebook() -> nbf.NotebookNode:
             import matplotlib.pyplot as plt
             import numpy as np
             import pandas as pd
-            from IPython.display import IFrame, Markdown, display
+            from IPython.display import HTML, IFrame, Image, Markdown, display
             from sklearn.metrics.pairwise import cosine_similarity
             from sklearn.neighbors import NearestNeighbors
             from sklearn.preprocessing import normalize
@@ -313,7 +313,18 @@ def build_notebook() -> nbf.NotebookNode:
             """),
         code("""
             html_path = ROOT / "outputs/figures/umap3d_final.html"
-            display(IFrame(src=str(html_path), width="100%", height=620))
+            png_path = ROOT / "outputs/figures/umap3d_final.png"
+
+            print("HTML exists:", html_path.exists(), html_path)
+            print("PNG exists:", png_path.exists(), png_path)
+
+            if png_path.exists():
+                display(Image(filename=str(png_path), width=900))
+
+            if html_path.exists():
+                html_url = html_path.resolve().as_uri()
+                display(HTML(f'<p><a href="{html_url}" target="_blank">Открыть интерактивную 3D-карту в браузере</a></p>'))
+                display(IFrame(src=html_url, width="100%", height=620))
             """),
         md("""
             ## Интерпретация кластеров
